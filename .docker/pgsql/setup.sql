@@ -1,0 +1,1 @@
+CREATE DATABASE symfony_db_test;

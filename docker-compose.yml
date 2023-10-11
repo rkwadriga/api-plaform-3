@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+    pgsql: # docker-compose run pgsql bash
+        image: postgres
+        restart: always
+        environment:
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: admin
+            POSTGRES_DB: api_platform_3_db
+        volumes:
+            - .docker/pgsql/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+        ports:
+            - 5436:5432
+    php: # docker-compose run php bash
+        build: './.docker/php'
+        ports:
+            - "8899:80"
+        tty: true
+        environment:
+            PHP_IDE_CONFIG: "serverName=Api-Platform-3 Docker"
+        volumes:
+            - ./:/var/www/html/
+            - ./.docker/php/logs/:/var/log/apache2/
+            - ./.docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+            - ./.docker/php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+        depends_on:
+            - pgsql
+    composer: # docker-compose run composer bash
+        build: './.docker/composer'
+        tty: true
+        command: [ "composer", "update" ]
+        volumes:
+            - ./:/app/
+            - ./.docker/composer/tmp/:/tmp/
+        depends_on:
+            - php
+    ###> doctrine/doctrine-bundle ###
+    database:
+        image: postgres:${POSTGRES_VERSION:-15}-alpine
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB:-app}
+            # You should definitely change the password in production
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
+            POSTGRES_USER: ${POSTGRES_USER:-app}
+        volumes:
+            - database_data:/var/lib/postgresql/data:rw
+            # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+            # - ./docker/db/data:/var/lib/postgresql/data:rw
+###< doctrine/doctrine-bundle ###
+
+volumes:
+    ###> doctrine/doctrine-bundle ###
+    database_data:
+###< doctrine/doctrine-bundle ###
