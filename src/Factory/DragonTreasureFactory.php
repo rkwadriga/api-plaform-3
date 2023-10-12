@@ -83,7 +83,7 @@ final class DragonTreasureFactory extends ModelFactory
             'isPublished' => self::faker()->boolean(),
             'name' => self::faker()->randomElement(self::TREASURE_NAMES),
             'plunderedAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
-            'value' => self::faker()->numberBetween(1000, 10000000),
+            'value' => self::faker()->numberBetween(1000, 1000000),
         ];
     }
 
