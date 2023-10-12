@@ -25,10 +25,12 @@ use function Symfony\Component\String\u;
 
 #[ORM\Entity(repositoryClass: DragonTreasureRepository::class)]
 #[ApiResource(
-    shortName: 'treasure',
+    shortName: 'Treasure',
     description: 'A rare and valuable treasure.',
     operations: [
-        new Get(),
+        new Get(normalizationContext: [
+            'groups' => ['treasure:read', 'treasure:item:get'],
+        ],),
         new GetCollection(),
         new Post(),
         new Put(),
@@ -58,8 +60,13 @@ class DragonTreasure
     #[Groups(['treasure:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\ManyToOne(inversedBy: 'dragonTreasures')]
+    #[ORM\JoinColumn(nullable: false)]
     #[Groups(['treasure:read', 'treasure:write'])]
+    private ?User $owner = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['treasure:read', 'treasure:write', 'user:read'])]
     #[ApiFilter(SearchFilter::class, strategy: 'partial')]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 50, maxMessage: 'Describe your loot in 50 chars or less')]
@@ -72,7 +79,7 @@ class DragonTreasure
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['treasure:read', 'treasure:write'])]
+    #[Groups(['treasure:read', 'treasure:write', 'user:read'])]
     #[ApiFilter(RangeFilter::class)]
     #[Assert\GreaterThanOrEqual(0)]
     private int $value = 0;
@@ -98,6 +105,18 @@ class DragonTreasure
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): static
+    {
+        $this->owner = $owner;
+
+        return $this;
     }
 
     public function getName(): ?string
