@@ -9,3 +9,8 @@ api_platform:
         extra_properties:
             standard_put: true
         #pagination_items_per_page: 5
+    formats:
+        jsonld: [application/ld+json]
+        json: [application/json]
+        html: [text/html]
+        jsonhal: [application/hal+json]
