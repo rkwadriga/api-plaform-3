@@ -2,24 +2,19 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata as ApiMetadata;
 use ApiPlatform\Serializer\Filter\PropertyFilter;
 use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections as Collections;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\SerializedName;
-use Symfony\Component\Serializer\Annotation\SerializedPath;
+use Symfony\Component\Security\Core\User as Security;
+use Symfony\Component\Serializer\Annotation as Annotation;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-#[ApiResource(
+#[ApiMetadata\ApiResource(
     normalizationContext: [
         'groups' => ['user:read'],
     ],
@@ -29,8 +24,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
-#[ApiFilter(PropertyFilter::class)]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+#[ApiMetadata\ApiFilter(PropertyFilter::class)]
+class User implements Security\UserInterface, Security\PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -38,13 +33,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['user:read', 'user:write', 'treasure:item:get'])]
+    #[Annotation\Groups(['user:read', 'user:write', 'treasure:item:get'])]
     #[Assert\NotBlank]
     #[Assert\Email]
     private ?string $email = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['user:read', 'user:write', 'treasure:item:get', 'treasure:write'])]
+    #[Annotation\Groups(['user:read', 'user:write', 'treasure:item:get', 'treasure:write'])]
     #[Assert\NotBlank]
     private ?string $username = null;
 
@@ -55,19 +50,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
-    #[Groups(['user:write'])]
+    #[Annotation\Groups(['user:write'])]
     #[Assert\NotBlank]
     private ?string $password = null;
 
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: DragonTreasure::class, cascade: ['persist'], orphanRemoval: true)]
-    #[Groups(['user:read', 'user:write'])]
-    #[SerializedName('treasures')]
+    #[Annotation\Groups(['user:read', 'user:write'])]
+    #[Annotation\SerializedName('treasures')]
     #[Assert\Valid]
-    private Collection $dragonTreasures;
+    private Collections\Collection $dragonTreasures;
 
     public function __construct()
     {
-        $this->dragonTreasures = new ArrayCollection();
+        $this->dragonTreasures = new Collections\ArrayCollection();
     }
 
     public function getId(): ?int
@@ -153,9 +148,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, DragonTreasure>
+     * @return Collections\Collection<int, DragonTreasure>
      */
-    public function getDragonTreasures(): Collection
+    public function getDragonTreasures(): Collections\Collection
     {
         return $this->dragonTreasures;
     }
