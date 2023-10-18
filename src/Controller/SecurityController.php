@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use ApiPlatform\Api\IriConverterInterface;
 use App\Entity\User;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,5 +25,11 @@ class SecurityController extends AbstractController
         return new Response(null, Response::HTTP_NO_CONTENT, [
             'Location' => $iriConverter->getIriFromResource($user),
         ]);
+    }
+
+    #[Route('/api/logout', name: 'app_logout')]
+    public function logout(): void
+    {
+        throw new Exception('This should never be reached');
     }
 }

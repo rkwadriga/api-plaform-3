@@ -11,7 +11,7 @@
                 <div v-if="user">
                     Authenticated as: <strong>{{ user.username }}</strong>
 
-                    | <a href="/logout" class="underline">Log out</a>
+                    | <a href="/api/logout" class="underline">Log out</a>
                 </div>
                 <div v-else>Not authenticated</div>
 
@@ -30,8 +30,8 @@ import LoginForm from '../LoginForm';
 import coinLogoPath from '../../images/coinLogo.png';
 import goldPilePath from '../../images/GoldPile.png';
 
-defineProps(['entrypoint']);
-const user = ref(null);
+const props = defineProps(['entrypoint', 'user']);
+const user = ref(props.user);
 
 const onUserAuthenticated = async (userUri) => {
     const response = await fetch(userUri);
