@@ -16,6 +16,7 @@ api_platform:
         jsonhal: [application/hal+json]
     swagger:
         api_keys:
+            #overrided in App\ApiPlatform\OpenApiFactoryDecorator
             access_token:
                 name: Authorization
                 type: header
