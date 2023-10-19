@@ -159,7 +159,7 @@ class DragonTreasure
     #[Annotation\Groups(['treasure:read'])]
     public function getShortDescription(): ?string
     {
-        return u($this->description)->truncate(40, '...');
+        return u($this->description)->truncate(40, '...')->toString();
     }
 
     public function getValue(): int

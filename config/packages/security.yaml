@@ -22,6 +22,9 @@ security:
                 password_path: password
             logout:
                 path: app_logout
+            stateless: true # disable the sessions for authenticated users
+            access_token:
+                token_handler: App\Security\ApiTokenHandler
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
