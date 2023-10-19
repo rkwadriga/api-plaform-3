@@ -24,12 +24,14 @@ class ApiTokenHandler implements AccessTokenHandlerInterface
     {
         $token = $this->tokenRepository->findOneBy(['token' => $accessToken]);
         if ($token === null) {
-            throw new BadCredentialsException();
+            throw new BadCredentialsException('Invalid credentials.');
         }
 
         if (!$token->isValid()) {
-            throw new CustomUserMessageAuthenticationException('Token expired');
+            throw new CustomUserMessageAuthenticationException('Token expired.');
         }
+
+        $token->getOwnedBy()->markAsTokenAuthenticated($token->getScopes());
 
         return new UserBadge($token->getOwnedBy()->getUserIdentifier(), fn () => $token->getOwnedBy());
     }
