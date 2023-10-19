@@ -23,9 +23,10 @@ use function Symfony\Component\String\u;
             'groups' => ['treasure:read', 'treasure:item:get'],
         ]),
         new ApiMetadata\GetCollection(),
-        new ApiMetadata\Post(),
-        new ApiMetadata\Put(),
-        new ApiMetadata\Patch()
+        new ApiMetadata\Post(security: 'is_granted("ROLE_TREASURE_CREATE")'),
+        new ApiMetadata\Put(security: 'is_granted("ROLE_TREASURE_EDIT")'),
+        new ApiMetadata\Patch(security: 'is_granted("ROLE_TREASURE_EDIT")'),
+        new ApiMetadata\Delete(security: 'is_granted("ROLE_ADMIN")')
     ],
     formats: [
         'jsonld',

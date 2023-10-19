@@ -15,12 +15,32 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ApiMetadata\ApiResource(
+    operations: [
+        new ApiMetadata\Get(),
+        new ApiMetadata\GetCollection(),
+        new ApiMetadata\Post(security: 'is_granted("PUBLIC_ACCESS")'),
+        new ApiMetadata\Put(security: 'is_granted("ROLE_USER_EDIT")'),
+        new ApiMetadata\Patch(security: 'is_granted("ROLE_USER_EDIT")'),
+        new ApiMetadata\Delete()
+    ],
     normalizationContext: [
         'groups' => ['user:read'],
     ],
     denormalizationContext: [
         'groups' => ['user:write'],
     ],
+    security: 'is_granted("ROLE_USER")'
+)]
+#[ApiMetadata\ApiResource(
+    uriTemplate: '/treasures/{treasure_id}/owner.{_format}',
+    operations: [new ApiMetadata\Get()],
+    uriVariables: [
+        'treasure_id' => new ApiMetadata\Link(
+            fromProperty: 'owner',
+            fromClass: DragonTreasure::class
+        )
+    ],
+    security: 'is_granted("ROLE_USER")'
 )]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
