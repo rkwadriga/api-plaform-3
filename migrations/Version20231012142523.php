@@ -14,7 +14,7 @@ final class Version20231012142523 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Add reference to "user" table ("owner_id" -> "id") for "dragon_treasure" table';
     }
 
     public function up(Schema $schema): void

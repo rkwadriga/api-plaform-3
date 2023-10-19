@@ -60,9 +60,13 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
     #[Assert\Valid]
     private Collections\Collection $dragonTreasures;
 
+    #[ORM\OneToMany(mappedBy: 'ownedBy', targetEntity: ApiToken::class)]
+    private Collections\Collection $apiTokens;
+
     public function __construct()
     {
         $this->dragonTreasures = new Collections\ArrayCollection();
+        $this->apiTokens = new Collections\ArrayCollection();
     }
 
     public function getId(): ?int
@@ -175,5 +179,44 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collections\Collection<int, ApiToken>
+     */
+    public function getApiTokens(): Collections\Collection
+    {
+        return $this->apiTokens;
+    }
+
+    public function addApiToken(ApiToken $apiToken): static
+    {
+        if (!$this->apiTokens->contains($apiToken)) {
+            $this->apiTokens->add($apiToken);
+            $apiToken->setOwnedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeApiToken(ApiToken $apiToken): static
+    {
+        if ($this->apiTokens->removeElement($apiToken)) {
+            // set the owning side to null (unless already changed)
+            if ($apiToken->getOwnedBy() === $this) {
+                $apiToken->setOwnedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getValidTokenStrings(): array
+    {
+        return $this->getApiTokens()
+            ->filter(fn (ApiToken $token) => $token->isValid())
+            ->map(fn (ApiToken $token) => $token->getToken())
+            ->toArray()
+        ;
     }
 }
