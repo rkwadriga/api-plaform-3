@@ -8,17 +8,14 @@ namespace App\Tests\Functional;
 
 use App\Factory\DragonTreasureFactory;
 use App\Factory\UserFactory;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Response;
-use Zenstruck\Browser\Test\HasBrowser;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
 /**
  * Run: symt tests/Functional/DragonTreasureResourceTest.php
  */
-class DragonTreasureResourceTest extends KernelTestCase
+class DragonTreasureResourceTest extends ApiTestCaseAbstract
 {
-    use HasBrowser;
     use ResetDatabase;
 
     protected function setUp(): void
@@ -75,7 +72,7 @@ class DragonTreasureResourceTest extends KernelTestCase
     }
 
     /**
-    * Run: symt --filter=testPostToCreateTreasure
+    * Run: symt --filter=testPostCreateTreasure
     */
     public function testPostCreateTreasure(): void
     {
@@ -83,7 +80,6 @@ class DragonTreasureResourceTest extends KernelTestCase
 
         $this->browser()
             ->actingAs($user)
-            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->post('/api/treasures', [
                 'json' => [
                     'name' => 'A shiny thing',
@@ -94,6 +90,7 @@ class DragonTreasureResourceTest extends KernelTestCase
                 ],
             ])
             ->assertStatus(Response::HTTP_CREATED)
+            ->dump()
         ;
     }
 }
