@@ -6,6 +6,9 @@
 
 namespace App\Tests\Functional;
 
+use App\Entity\ApiToken;
+use App\Entity\User;
+use App\Factory\ApiTokenFactory;
 use App\Factory\DragonTreasureFactory;
 use App\Factory\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +25,6 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     {
         parent::setUp();
 
-        UserFactory::createMany(2);
         DragonTreasureFactory::createMany(5, fn () => [
             'owner' => UserFactory::random(),
         ]);
@@ -60,10 +62,8 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPostCreateEmptyTreasure(): void
     {
-        $user = UserFactory::createOne();
-
         $this->browser()
-            ->actingAs($user)
+            ->actingAs($this->user)
             ->post('/api/treasures', [
                 'json' => [],
             ])
@@ -76,21 +76,60 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     */
     public function testPostCreateTreasure(): void
     {
-        $user = UserFactory::createOne();
-
         $this->browser()
-            ->actingAs($user)
+            ->actingAs($this->user)
             ->post('/api/treasures', [
                 'json' => [
                     'name' => 'A shiny thing',
                     'description' => 'It sparkles when I wave it in the air.',
                     'value' => 1000,
                     'coolFactor' => 5,
-                    'owner' => '/api/users/' . $user->getId(),
+                    'owner' => '/api/users/' . $this->user->getId(),
                 ],
             ])
             ->assertStatus(Response::HTTP_CREATED)
-            ->dump()
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testPostCreateEmptyTreasureWithApiToken
+     */
+    public function testPostCreateEmptyTreasureWithApiToken(): void
+    {
+        $token = ApiTokenFactory::createOne([
+            'ownedBy' => $this->user,
+            'scopes' => [ApiToken::SCOPE_TREASURE_CREATE],
+        ]);
+
+        $this->browser()
+            ->post('/api/treasures', [
+                'json' => [],
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token->getToken(),
+                ],
+            ])
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testPostCreateEmptyTreasureWithApiTokenDeniedWithoutScope
+     */
+    public function testPostCreateEmptyTreasureWithApiTokenDeniedWithoutScope(): void
+    {
+        $token = ApiTokenFactory::createOne([
+            'ownedBy' => $this->user,
+            'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
+        ]);
+
+        $this->browser()
+            ->post('/api/treasures', [
+                'json' => [],
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token->getToken(),
+                ],
+            ])
+            ->assertStatus(Response::HTTP_FORBIDDEN)
         ;
     }
 }
