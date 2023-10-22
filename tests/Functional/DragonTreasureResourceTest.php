@@ -9,6 +9,7 @@ namespace App\Tests\Functional;
 use App\Factory\DragonTreasureFactory;
 use App\Factory\UserFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Browser\Test\HasBrowser;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
@@ -30,6 +31,9 @@ class DragonTreasureResourceTest extends KernelTestCase
         ]);
     }
 
+    /**
+     * Run: symt --filter=testGetCollectionOfTreasures
+     */
     public function testGetCollectionOfTreasures(): void
     {
         $this->browser()
@@ -51,6 +55,45 @@ class DragonTreasureResourceTest extends KernelTestCase
             /*->use(function (\Zenstruck\Browser\Json $json) {
                 dump($json->search('keys("hydra:member"[0])'));
             })*/
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testPostCreateEmptyTreasure
+     */
+    public function testPostCreateEmptyTreasure(): void
+    {
+        $user = UserFactory::createOne();
+
+        $this->browser()
+            ->actingAs($user)
+            ->post('/api/treasures', [
+                'json' => [],
+            ])
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+        ;
+    }
+
+    /**
+    * Run: symt --filter=testPostToCreateTreasure
+    */
+    public function testPostCreateTreasure(): void
+    {
+        $user = UserFactory::createOne();
+
+        $this->browser()
+            ->actingAs($user)
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->post('/api/treasures', [
+                'json' => [
+                    'name' => 'A shiny thing',
+                    'description' => 'It sparkles when I wave it in the air.',
+                    'value' => 1000,
+                    'coolFactor' => 5,
+                    'owner' => '/api/users/' . $user->getId(),
+                ],
+            ])
+            ->assertStatus(Response::HTTP_CREATED)
         ;
     }
 }
