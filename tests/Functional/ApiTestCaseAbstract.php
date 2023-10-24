@@ -6,8 +6,6 @@
 
 namespace App\Tests\Functional;
 
-use App\Entity\ApiToken;
-use App\Entity\DragonTreasure;
 use App\Entity\User;
 use App\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +31,7 @@ abstract class ApiTestCaseAbstract extends KernelTestCase
 
         $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
 
+        UserFactory::createMany(3);
         /** @var Proxy $user */
         $user = UserFactory::random();
         $this->user = $user->object();

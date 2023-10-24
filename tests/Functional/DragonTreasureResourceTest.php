@@ -28,6 +28,11 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
         DragonTreasureFactory::createMany(5, fn () => [
             'owner' => UserFactory::random(),
         ]);
+
+        ApiTokenFactory::createOne([
+            'ownedBy' => $this->user,
+            'scopes' => [ApiToken::SCOPE_TREASURE_CREATE],
+        ]);
     }
 
     /**
@@ -96,10 +101,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPostCreateEmptyTreasureWithApiToken(): void
     {
-        $token = ApiTokenFactory::createOne([
-            'ownedBy' => $this->user,
-            'scopes' => [ApiToken::SCOPE_TREASURE_CREATE],
-        ]);
+        $token = ApiTokenFactory::random();
 
         $this->browser()
             ->post('/api/treasures', [
@@ -117,10 +119,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPostCreateEmptyTreasureWithApiTokenDeniedWithoutScope(): void
     {
-        $token = ApiTokenFactory::createOne([
-            'ownedBy' => $this->user,
-            'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
-        ]);
+        $token = ApiTokenFactory::random();
 
         $this->browser()
             ->post('/api/treasures', [
