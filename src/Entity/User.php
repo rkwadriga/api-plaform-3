@@ -29,7 +29,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     denormalizationContext: [
         'groups' => ['user:write'],
     ],
-    security: 'is_granted("ROLE_USER")'
+    security: 'is_granted("ROLE_USER")',
+    extraProperties: [
+        'standard_put' => true,
+    ]
 )]
 #[ApiMetadata\ApiResource(
     uriTemplate: '/treasures/{treasure_id}/owner.{_format}',
@@ -40,7 +43,10 @@ use Symfony\Component\Validator\Constraints as Assert;
             fromClass: DragonTreasure::class
         )
     ],
-    security: 'is_granted("ROLE_USER")'
+    security: 'is_granted("ROLE_USER")',
+    extraProperties: [
+        'standard_put' => true,
+    ]
 )]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]

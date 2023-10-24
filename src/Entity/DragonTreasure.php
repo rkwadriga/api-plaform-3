@@ -41,7 +41,10 @@ use function Symfony\Component\String\u;
     denormalizationContext: [
         'groups' => ['treasure:write'],
     ],
-    paginationItemsPerPage: 10
+    paginationItemsPerPage: 10,
+    extraProperties: [
+        'standard_put' => true,
+    ]
 )]
 #[ApiMetadata\ApiResource(
     uriTemplate: '/users/{user_id}/treasures.{_format}',
@@ -52,6 +55,9 @@ use function Symfony\Component\String\u;
             toProperty: 'owner',
             fromClass: User::class
         )
+    ],
+    extraProperties: [
+        'standard_put' => true,
     ]
 )]
 #[ApiMetadata\ApiFilter(PropertyFilter::class)]

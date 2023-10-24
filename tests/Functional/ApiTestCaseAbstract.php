@@ -6,8 +6,11 @@
 
 namespace App\Tests\Functional;
 
+use App\Entity\ApiToken;
+use App\Entity\DragonTreasure;
 use App\Entity\User;
 use App\Factory\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Browser\HttpOptions;
 use Zenstruck\Browser\KernelBrowser;
@@ -20,13 +23,16 @@ abstract class ApiTestCaseAbstract extends KernelTestCase
         browser as baseKernelBrowser;
     }
 
-    protected ?User $user = null;
+    protected User $user;
+
+    protected EntityManagerInterface $entityManager;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        UserFactory::createMany(3);
+        $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
+
         /** @var Proxy $user */
         $user = UserFactory::random();
         $this->user = $user->object();
