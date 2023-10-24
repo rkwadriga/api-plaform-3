@@ -144,7 +144,7 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
     {
         $roles = $this->roles;
         if ($this->accessTokenScopes === null) {
-            // Logged in as full, nirmal user
+            // Logged in as full, normal user
             $roles[] = 'ROLE_FULL_USER';
         } else {
             $roles = $this->accessTokenScopes;

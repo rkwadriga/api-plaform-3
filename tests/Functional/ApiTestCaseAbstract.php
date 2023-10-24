@@ -21,7 +21,7 @@ abstract class ApiTestCaseAbstract extends KernelTestCase
         browser as baseKernelBrowser;
     }
 
-    protected User $user;
+    private ?User $_user = null;
 
     protected EntityManagerInterface $entityManager;
 
@@ -30,11 +30,6 @@ abstract class ApiTestCaseAbstract extends KernelTestCase
         parent::setUp();
 
         $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
-
-        UserFactory::createMany(3);
-        /** @var Proxy $user */
-        $user = UserFactory::random();
-        $this->user = $user->object();
     }
 
     protected function browser(array $options = [], array $server = []): KernelBrowser
@@ -43,5 +38,16 @@ abstract class ApiTestCaseAbstract extends KernelTestCase
             ->setDefaultHttpOptions(
                 HttpOptions::create()->withHeader('Accept', 'application/ld+json')
             );
+    }
+
+    protected function getUser(): User
+    {
+        if ($this->_user === null) {
+            /** @var Proxy $user */
+            $user = UserFactory::createOne();
+            $this->_user = $user->object();
+        }
+
+        return $this->_user;
     }
 }

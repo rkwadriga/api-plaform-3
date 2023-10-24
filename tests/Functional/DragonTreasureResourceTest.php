@@ -21,25 +21,15 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
 {
     use ResetDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        DragonTreasureFactory::createMany(5, fn () => [
-            'owner' => UserFactory::random(),
-        ]);
-
-        ApiTokenFactory::createOne([
-            'ownedBy' => $this->user,
-            'scopes' => [ApiToken::SCOPE_TREASURE_CREATE],
-        ]);
-    }
-
     /**
-     * Run: symt --filter=testGetCollectionOfTreasures
+     * Run: symt --filter=testGetCollectionOfTreasuresSuccess
      */
-    public function testGetCollectionOfTreasures(): void
+    public function testGetCollectionOfTreasuresSuccess(): void
     {
+        DragonTreasureFactory::createMany(5, fn () => [
+            'owner' => $this->getUser(),
+        ]);
+
         $this->browser()
             ->get('/api/treasures')
             ->assertJson()
@@ -63,12 +53,12 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     }
 
     /**
-     * Run: symt --filter=testPostCreateEmptyTreasure
+     * Run: symt --filter=testPostCreateEmptyTreasureSuccess
      */
-    public function testPostCreateEmptyTreasure(): void
+    public function testPostCreateEmptyTreasureSuccess(): void
     {
         $this->browser()
-            ->actingAs($this->user)
+            ->actingAs($this->getUser())
             ->post('/api/treasures', [
                 'json' => [],
             ])
@@ -77,19 +67,19 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     }
 
     /**
-    * Run: symt --filter=testPostCreateTreasure
+    * Run: symt --filter=testPostCreateTreasureSuccess
     */
-    public function testPostCreateTreasure(): void
+    public function testPostCreateTreasureSuccess(): void
     {
         $this->browser()
-            ->actingAs($this->user)
+            ->actingAs($this->getUser())
             ->post('/api/treasures', [
                 'json' => [
                     'name' => 'A shiny thing',
                     'description' => 'It sparkles when I wave it in the air.',
                     'value' => 1000,
                     'coolFactor' => 5,
-                    'owner' => '/api/users/' . $this->user->getId(),
+                    'owner' => '/api/users/' . $this->getUser()->getId(),
                 ],
             ])
             ->assertStatus(Response::HTTP_CREATED)
@@ -97,11 +87,14 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     }
 
     /**
-     * Run: symt --filter=testPostCreateEmptyTreasureWithApiToken
+     * Run: symt --filter=testPostCreateEmptyTreasureWithApiTokenSuccess
      */
-    public function testPostCreateEmptyTreasureWithApiToken(): void
+    public function testPostCreateEmptyTreasureWithApiTokenSuccess(): void
     {
-        $token = ApiTokenFactory::random();
+        $token = ApiTokenFactory::createOne([
+            'ownedBy' => $this->getUser(),
+            'scopes' => [ApiToken::SCOPE_TREASURE_CREATE],
+        ]);
 
         $this->browser()
             ->post('/api/treasures', [
@@ -119,11 +112,96 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPostCreateEmptyTreasureWithApiTokenDeniedWithoutScope(): void
     {
-        $token = ApiTokenFactory::random();
+        $token = ApiTokenFactory::createOne([
+            'ownedBy' => $this->getUser(),
+            'scopes' => [],
+        ]);
 
         $this->browser()
             ->post('/api/treasures', [
                 'json' => [],
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token->getToken(),
+                ],
+            ])
+            ->assertStatus(Response::HTTP_FORBIDDEN)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testPatchToUpdateTreasureWithApiTokenSuccess
+     */
+    public function testPatchToUpdateTreasureWithApiTokenSuccess(): void
+    {
+        $treasure = DragonTreasureFactory::createOne([
+            'owner' => $this->getUser(),
+        ]);
+        $token = ApiTokenFactory::createOne([
+            'ownedBy' => $this->getUser(),
+            'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
+        ]);
+
+        $this->browser()
+            ->patch('/api/treasures/' . $treasure->getId(), [
+                'json' => [
+                    'value' => 12345,
+                ],
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token->getToken(),
+                ],
+            ])
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonMatches('value', 12345)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testPatchToUpdateTreasureWithApiTokenWithAnotherUser
+     */
+    public function testPatchToUpdateTreasureWithApiTokenWithAnotherUser(): void
+    {
+        $treasure = DragonTreasureFactory::createOne([
+            'owner' => $this->getUser(),
+        ]);
+        $notOwner = UserFactory::createOne();
+        $token = ApiTokenFactory::createOne([
+            'ownedBy' => $notOwner,
+            'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
+        ]);
+
+        $this->browser()
+            ->patch('/api/treasures/' . $treasure->getId(), [
+                'json' => [
+                    'value' => 12345,
+                ],
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token->getToken(),
+                ],
+            ])
+            ->assertStatus(Response::HTTP_FORBIDDEN)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testPatchToUpdateTreasureWithNewOwner
+     */
+    public function testPatchToUpdateTreasureWithNewOwner(): void
+    {
+        $treasure = DragonTreasureFactory::createOne([
+            'owner' => $this->getUser(),
+        ]);
+        $notOwner = UserFactory::createOne();
+        $token = ApiTokenFactory::createOne([
+            'ownedBy' => $this->getUser(),
+            'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
+        ]);
+
+        $this->browser()
+            ->actingAs($treasure->getOwner())
+            ->patch('/api/treasures/' . $treasure->getId(), [
+                'json' => [
+                    'owner' => '/api/users/' . $notOwner->getId(),
+                ],
                 'headers' => [
                     'Authorization' => 'Bearer ' . $token->getToken(),
                 ],
