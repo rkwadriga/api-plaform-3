@@ -27,7 +27,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     public function testGetCollectionOfTreasuresSuccess(): void
     {
         DragonTreasureFactory::createMany(5, fn () => [
-            'owner' => $this->getUser(),
+            'owner' => UserFactory::createOne(),
         ]);
 
         $this->browser()
@@ -57,8 +57,10 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPostCreateEmptyTreasureSuccess(): void
     {
+        $user = UserFactory::createOne();
+
         $this->browser()
-            ->actingAs($this->getUser())
+            ->actingAs($user)
             ->post('/api/treasures', [
                 'json' => [],
             ])
@@ -71,15 +73,17 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     */
     public function testPostCreateTreasureSuccess(): void
     {
+        $user = UserFactory::createOne();
+
         $this->browser()
-            ->actingAs($this->getUser())
+            ->actingAs($user)
             ->post('/api/treasures', [
                 'json' => [
                     'name' => 'A shiny thing',
                     'description' => 'It sparkles when I wave it in the air.',
                     'value' => 1000,
                     'coolFactor' => 5,
-                    'owner' => '/api/users/' . $this->getUser()->getId(),
+                    'owner' => '/api/users/' . $user->getId(),
                 ],
             ])
             ->assertStatus(Response::HTTP_CREATED)
@@ -91,8 +95,10 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPostCreateEmptyTreasureWithApiTokenSuccess(): void
     {
+        $user = UserFactory::createOne();
+
         $token = ApiTokenFactory::createOne([
-            'ownedBy' => $this->getUser(),
+            'ownedBy' => $user,
             'scopes' => [ApiToken::SCOPE_TREASURE_CREATE],
         ]);
 
@@ -112,8 +118,10 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPostCreateEmptyTreasureWithApiTokenDeniedWithoutScope(): void
     {
+        $user = UserFactory::createOne();
+
         $token = ApiTokenFactory::createOne([
-            'ownedBy' => $this->getUser(),
+            'ownedBy' => $user,
             'scopes' => [],
         ]);
 
@@ -133,11 +141,14 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPatchToUpdateTreasureWithApiTokenSuccess(): void
     {
+        $user = UserFactory::createOne();
+
         $treasure = DragonTreasureFactory::createOne([
-            'owner' => $this->getUser(),
+            'owner' => $user,
         ]);
+
         $token = ApiTokenFactory::createOne([
-            'ownedBy' => $this->getUser(),
+            'ownedBy' => $user,
             'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
         ]);
 
@@ -160,10 +171,14 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPatchToUpdateTreasureWithApiTokenWithAnotherUser(): void
     {
+        $user = UserFactory::createOne();
+
         $treasure = DragonTreasureFactory::createOne([
-            'owner' => $this->getUser(),
+            'owner' => $user,
         ]);
+
         $notOwner = UserFactory::createOne();
+
         $token = ApiTokenFactory::createOne([
             'ownedBy' => $notOwner,
             'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
@@ -187,17 +202,20 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
      */
     public function testPatchToUpdateTreasureWithNewOwner(): void
     {
+        $user = UserFactory::createOne();
+
         $treasure = DragonTreasureFactory::createOne([
-            'owner' => $this->getUser(),
+            'owner' => $user,
         ]);
+
         $notOwner = UserFactory::createOne();
+
         $token = ApiTokenFactory::createOne([
-            'ownedBy' => $this->getUser(),
+            'ownedBy' => $user,
             'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
         ]);
 
         $this->browser()
-            ->actingAs($treasure->getOwner())
             ->patch('/api/treasures/' . $treasure->getId(), [
                 'json' => [
                     'owner' => '/api/users/' . $notOwner->getId(),
@@ -207,6 +225,36 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
                 ],
             ])
             ->assertStatus(Response::HTTP_FORBIDDEN)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testAdminCanPatchToEditTreasureSuccess
+     */
+    public function testAdminCanPatchToEditTreasureSuccess(): void
+    {
+        $user = UserFactory::createOne();
+
+        $treasure = DragonTreasureFactory::createOne([
+            'owner' => $user,
+        ]);
+
+        $admin = UserFactory::new()->asAdmin()->create();
+
+        $token = ApiTokenFactory::createOne([
+            'ownedBy' => $admin,
+        ]);
+
+        $this->browser()
+            ->patch('/api/treasures/' . $treasure->getId(), [
+                'json' => [
+                    'value' => 12345,
+                ],
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token->getToken(),
+                ],
+            ])
+            ->assertStatus(Response::HTTP_OK)
         ;
     }
 }

@@ -147,7 +147,7 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
             // Logged in as full, normal user
             $roles[] = 'ROLE_FULL_USER';
         } else {
-            $roles = $this->accessTokenScopes;
+            $roles += $this->accessTokenScopes;
         }
 
         // guarantee every user at least has ROLE_USER
