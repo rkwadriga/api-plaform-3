@@ -22,9 +22,9 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     use ResetDatabase;
 
     /**
-     * Run: symt --filter=testGetCollectionOfTreasuresSuccess
+     * Run: symt --filter=testGetCollectionOfTreasures
      */
-    public function testGetCollectionOfTreasuresSuccess(): void
+    public function testGetCollectionOfTreasures(): void
     {
         DragonTreasureFactory::createMany(5, fn () => [
             'owner' => UserFactory::createOne(),
@@ -53,113 +53,67 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     }
 
     /**
-     * Run: symt --filter=testPostCreateEmptyTreasureSuccess
+     * Run: symt --filter=testPostCreateEmptyTreasure
      */
-    public function testPostCreateEmptyTreasureSuccess(): void
+    public function testPostCreateEmptyTreasure(): void
     {
         $user = UserFactory::createOne();
 
         $this->browser()
-            ->actingAs($user)
-            ->post('/api/treasures', [
-                'json' => [],
-            ])
+            ->asUser($user)
+            ->post('/api/treasures')
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
         ;
     }
 
     /**
-    * Run: symt --filter=testPostCreateTreasureSuccess
+    * Run: symt --filter=testPostCreateTreasure
     */
-    public function testPostCreateTreasureSuccess(): void
+    public function testPostCreateTreasure(): void
     {
         $user = UserFactory::createOne();
 
         $this->browser()
-            ->actingAs($user)
+            ->asUser($user)
             ->post('/api/treasures', [
-                'json' => [
-                    'name' => 'A shiny thing',
-                    'description' => 'It sparkles when I wave it in the air.',
-                    'value' => 1000,
-                    'coolFactor' => 5,
-                    'owner' => '/api/users/' . $user->getId(),
-                ],
+                'name' => 'A shiny thing',
+                'description' => 'It sparkles when I wave it in the air.',
+                'value' => 1000,
+                'coolFactor' => 5,
+                'owner' => '/api/users/' . $user->getId(),
             ])
             ->assertStatus(Response::HTTP_CREATED)
         ;
     }
 
     /**
-     * Run: symt --filter=testPostCreateEmptyTreasureWithApiTokenSuccess
+     * Run: symt --filter=testDeniedWithoutScopePostCreateEmptyTreasure
      */
-    public function testPostCreateEmptyTreasureWithApiTokenSuccess(): void
+    public function testDeniedWithoutScopePostCreateEmptyTreasure(): void
     {
         $user = UserFactory::createOne();
 
-        $token = ApiTokenFactory::createOne([
-            'ownedBy' => $user,
-            'scopes' => [ApiToken::SCOPE_TREASURE_CREATE],
-        ]);
-
         $this->browser()
-            ->post('/api/treasures', [
-                'json' => [],
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token->getToken(),
-                ],
-            ])
-            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
-        ;
-    }
-
-    /**
-     * Run: symt --filter=testPostCreateEmptyTreasureWithApiTokenDeniedWithoutScope
-     */
-    public function testPostCreateEmptyTreasureWithApiTokenDeniedWithoutScope(): void
-    {
-        $user = UserFactory::createOne();
-
-        $token = ApiTokenFactory::createOne([
-            'ownedBy' => $user,
-            'scopes' => [],
-        ]);
-
-        $this->browser()
-            ->post('/api/treasures', [
-                'json' => [],
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token->getToken(),
-                ],
-            ])
+            ->asUser($user, [])
+            ->post('/api/treasures')
             ->assertStatus(Response::HTTP_FORBIDDEN)
         ;
     }
 
     /**
-     * Run: symt --filter=testPatchToUpdateTreasureWithApiTokenSuccess
+     * Run: symt --filter=testWithTreasureEditScopePatchToUpdateTreasure
      */
-    public function testPatchToUpdateTreasureWithApiTokenSuccess(): void
+    public function testWithTreasureEditScopePatchToUpdateTreasure(): void
     {
         $user = UserFactory::createOne();
-
         $treasure = DragonTreasureFactory::createOne([
             'owner' => $user,
         ]);
 
-        $token = ApiTokenFactory::createOne([
-            'ownedBy' => $user,
-            'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
-        ]);
-
         $this->browser()
+            ->asUser($user, [ApiToken::SCOPE_TREASURE_EDIT])
             ->patch('/api/treasures/' . $treasure->getId(), [
-                'json' => [
-                    'value' => 12345,
-                ],
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token->getToken(),
-                ],
+                'value' => 12345,
             ])
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonMatches('value', 12345)
@@ -167,94 +121,87 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     }
 
     /**
-     * Run: symt --filter=testPatchToUpdateTreasureWithApiTokenWithAnotherUser
+     * Run: symt --filter=testWithAnotherUserPatchToUpdateTreasure
      */
-    public function testPatchToUpdateTreasureWithApiTokenWithAnotherUser(): void
+    public function testWithAnotherUserPatchToUpdateTreasure(): void
     {
         $user = UserFactory::createOne();
-
         $treasure = DragonTreasureFactory::createOne([
             'owner' => $user,
         ]);
-
         $notOwner = UserFactory::createOne();
 
-        $token = ApiTokenFactory::createOne([
-            'ownedBy' => $notOwner,
-            'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
-        ]);
-
         $this->browser()
+            ->asUser($notOwner, [ApiToken::SCOPE_TREASURE_EDIT])
             ->patch('/api/treasures/' . $treasure->getId(), [
-                'json' => [
-                    'value' => 12345,
-                ],
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token->getToken(),
-                ],
+                'value' => 12345,
             ])
             ->assertStatus(Response::HTTP_FORBIDDEN)
         ;
     }
 
     /**
-     * Run: symt --filter=testPatchToUpdateTreasureWithNewOwner
+     * Run: symt --filter=testWithNewOwnerPatchToUpdateTreasure
      */
-    public function testPatchToUpdateTreasureWithNewOwner(): void
+    public function testWithNewOwnerPatchToUpdateTreasure(): void
     {
         $user = UserFactory::createOne();
-
         $treasure = DragonTreasureFactory::createOne([
             'owner' => $user,
         ]);
-
         $notOwner = UserFactory::createOne();
 
-        $token = ApiTokenFactory::createOne([
-            'ownedBy' => $user,
-            'scopes' => [ApiToken::SCOPE_TREASURE_EDIT],
-        ]);
-
         $this->browser()
+            ->asUser($user, [ApiToken::SCOPE_TREASURE_EDIT])
             ->patch('/api/treasures/' . $treasure->getId(), [
-                'json' => [
-                    'owner' => '/api/users/' . $notOwner->getId(),
-                ],
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token->getToken(),
-                ],
+                'owner' => '/api/users/' . $notOwner->getId(),
             ])
             ->assertStatus(Response::HTTP_FORBIDDEN)
         ;
     }
 
     /**
-     * Run: symt --filter=testAdminCanPatchToEditTreasureSuccess
+     * Run: symt --filter=testAdminCanPatchToEditTreasure
      */
-    public function testAdminCanPatchToEditTreasureSuccess(): void
+    public function testAdminCanSeeIsPublishedFieldPatchToEditTreasure(): void
     {
         $user = UserFactory::createOne();
-
         $treasure = DragonTreasureFactory::createOne([
+            'isPublished' => false,
             'owner' => $user,
         ]);
-
         $admin = UserFactory::new()->asAdmin()->create();
 
-        $token = ApiTokenFactory::createOne([
-            'ownedBy' => $admin,
+        $this->browser()
+            ->asUser($admin)
+            ->patch('/api/treasures/' . $treasure->getId(), [
+                'value' => 12345,
+            ])
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonMatches('value', 12345)
+            ->assertJsonMatches('isPublished', false)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testOwnerCanSeeIsPublishedFieldPatchToEditTreasure
+     */
+    public function testOwnerCanSeeIsPublishedFieldPatchToEditTreasure(): void
+    {
+        $user = UserFactory::createOne();
+        $treasure = DragonTreasureFactory::createOne([
+            'isPublished' => false,
+            'owner' => $user,
         ]);
 
         $this->browser()
+            ->asUser($user, [ApiToken::SCOPE_TREASURE_EDIT])
             ->patch('/api/treasures/' . $treasure->getId(), [
-                'json' => [
-                    'value' => 12345,
-                ],
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token->getToken(),
-                ],
+                'value' => 12345,
             ])
             ->assertStatus(Response::HTTP_OK)
+            ->assertJsonMatches('value', 12345)
+            ->assertJsonMatches('isPublished', false)
         ;
     }
 }

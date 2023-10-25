@@ -111,6 +111,8 @@ class DragonTreasure
 
     #[ORM\Column]
     #[ApiMetadata\ApiFilter(Filter\BooleanFilter::class)]
+    #[Annotation\Groups(['treasure:read', 'treasure:write'])]
+    #[ApiMetadata\ApiProperty(security: 'is_granted("EDIT", object)')]
     private bool $isPublished = true;
 
     public function __construct()

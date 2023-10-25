@@ -6,10 +6,11 @@
 
 namespace App\Tests\Functional;
 
+use App\Tests\Functional\Browser\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Browser\HttpOptions;
-use Zenstruck\Browser\KernelBrowser;
 use Zenstruck\Browser\Test\HasBrowser;
+use Zenstruck\Browser\KernelBrowser as BaseKernelBrowser;
 
 abstract class ApiTestCaseAbstract extends KernelTestCase
 {
@@ -17,8 +18,16 @@ abstract class ApiTestCaseAbstract extends KernelTestCase
         browser as baseKernelBrowser;
     }
 
-    protected function browser(array $options = [], array $server = []): KernelBrowser
+    /**
+     * @param array $options
+     * @param array $server
+     * @return KernelBrowser
+     */
+    protected function browser(array $options = [], array $server = []): BaseKernelBrowser
     {
+        // Set re-initialized KernelBrowser class
+        $_SERVER['KERNEL_BROWSER_CLASS'] = KernelBrowser::class;
+
         return $this->baseKernelBrowser($options, $server)
             ->setDefaultHttpOptions(
                 HttpOptions::create()->withHeader('Accept', 'application/ld+json')
