@@ -6,7 +6,6 @@
 
 namespace App\Tests\Functional\Browser;
 
-use App\Entity\ApiToken;
 use App\Entity\User;
 use App\Factory\ApiTokenFactory;
 use Zenstruck\Browser\KernelBrowser as BaseKernelBrowser;
@@ -65,6 +64,13 @@ class KernelBrowser extends BaseKernelBrowser
         $this->prepareOptions($options);
 
         return BaseKernelBrowser::patch($url, $options);
+    }
+
+    public function delete(string $url, $options = []): BaseKernelBrowser
+    {
+        $this->prepareOptions($options);
+
+        return parent::delete($url, $options);
     }
 
     private function prepareOptions(array &$options): void
