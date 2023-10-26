@@ -5,9 +5,11 @@ namespace App\Entity;
 use ApiPlatform\Metadata as ApiMetadata;
 use ApiPlatform\Serializer\Filter\PropertyFilter;
 use App\Repository\UserRepository;
+use App\State\UserHashPasswordProcessor;
 use Doctrine\Common\Collections as Collections;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\User as Security;
 use Symfony\Component\Serializer\Annotation as Annotation;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -76,8 +78,6 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
      * @var string The hashed password
      */
     #[ORM\Column]
-    #[Annotation\Groups(['user:write'])]
-    #[Assert\NotBlank]
     private ?string $password = null;
 
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: DragonTreasure::class, cascade: ['persist'], orphanRemoval: true)]
@@ -91,6 +91,10 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
 
     /** Scopes given during API authentication */
     private ?array $accessTokenScopes = null;
+
+    #[Annotation\Groups(['user:write'])]
+    #[Annotation\SerializedName('password')]
+    private ?string $plainPassword = null;
 
     public function __construct()
     {
@@ -178,13 +182,25 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
         return $this;
     }
 
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(string $painPassword): static
+    {
+        $this->plainPassword = $painPassword;
+
+        return $this;
+    }
+
     /**
      * @see UserInterface
      */
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        $this->plainPassword = null;
     }
 
     /**
