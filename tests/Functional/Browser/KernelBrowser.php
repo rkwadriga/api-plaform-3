@@ -40,14 +40,14 @@ class KernelBrowser extends BaseKernelBrowser
         return $this;
     }
 
-    public function setContentType(string $contentType): self
+    public function withContentType(string $contentType): self
     {
         $this->contentType = $contentType;
 
         return $this;
     }
 
-    public function get(string $url, $options = []): BaseKernelBrowser
+    public function get(string $url, $options = null): BaseKernelBrowser
     {
         $this->prepareOptions($options);
 
@@ -71,7 +71,7 @@ class KernelBrowser extends BaseKernelBrowser
     public function patch(string $url, $options = []): BaseKernelBrowser
     {
         $this
-            ->setContentType('application/merge-patch+json')
+            ->withContentType('application/merge-patch+json')
             ->prepareOptions($options)
         ;
 
@@ -85,15 +85,19 @@ class KernelBrowser extends BaseKernelBrowser
         return parent::delete($url, $options);
     }
 
-    private function prepareOptions(array &$options): void
+    private function prepareOptions(?array &$options = null): void
     {
-        if (!isset($options['json'])) {
+        if ($options !== null && !isset($options['json'])) {
             $json = $options;
             $options = ['json' => $json];
         }
 
         if ($this->contentType !== null) {
             $this->headers['Content-Type'] = $this->contentType;
+        }
+
+        if ($options === null) {
+            $options = [];
         }
 
         $headers = $options['headers'] ?? [];

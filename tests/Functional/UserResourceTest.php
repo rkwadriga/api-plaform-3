@@ -50,7 +50,6 @@ class UserResourceTest extends ApiTestCaseAbstract
             ->patch('/api/users/' . $user->getId(), [
                 'username' => 'changed',
             ])
-            ->dump()
             ->assertStatus(Response::HTTP_OK)
         ;
     }

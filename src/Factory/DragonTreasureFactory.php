@@ -52,7 +52,7 @@ final class DragonTreasureFactory extends ModelFactory
             'life-sized statue of the dragon itself',
             'collection of old, used toothbrushes',
             'box of mismatched socks',
-            'set of outdated electronics (such as CRT TVs or floppy disks)',
+            'set of outdated electronics (such as floppy disks)',
             'giant jar of pickles',
             'collection of novelty mugs with silly sayings',
             'pile of old board games',
