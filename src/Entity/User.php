@@ -20,7 +20,15 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new ApiMetadata\Get(),
         new ApiMetadata\GetCollection(),
-        new ApiMetadata\Post(security: 'is_granted("PUBLIC_ACCESS")'),
+        new ApiMetadata\Post(
+            security: 'is_granted("PUBLIC_ACCESS")',
+            validationContext: [
+                'groups' => [
+                    'Default',
+                    'PostValidation',
+                ],
+            ]
+        ),
         new ApiMetadata\Put(security: 'is_granted("ROLE_USER_EDIT")'),
         new ApiMetadata\Patch(security: 'is_granted("ROLE_USER_EDIT")'),
         new ApiMetadata\Delete()
@@ -94,6 +102,7 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
 
     #[Annotation\Groups(['user:write'])]
     #[Annotation\SerializedName('password')]
+    #[Assert\NotBlank(groups: ['PostValidation'])]
     private ?string $plainPassword = null;
 
     public function __construct()

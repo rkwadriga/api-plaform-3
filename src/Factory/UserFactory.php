@@ -70,7 +70,7 @@ final class UserFactory extends ModelFactory
     {
         return [
             'email' => self::faker()->email(),
-            'password' => '12345678',
+            'plainPassword' => '12345678',
             'username' => self::faker()->randomElement(self::USERNAMES) . self::faker()->randomNumber(3),
         ];
     }
@@ -84,7 +84,7 @@ final class UserFactory extends ModelFactory
             ->afterInstantiate(function(User $user): void {
                 $user->setPassword($this->passwordHasher->hashPassword(
                     $user,
-                    $user->getPassword()
+                    $user->getPlainPassword()
                 ));
             })
         ;

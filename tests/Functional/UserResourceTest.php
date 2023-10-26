@@ -6,6 +6,7 @@
 
 namespace App\Tests\Functional;
 
+use App\Factory\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
@@ -34,6 +35,23 @@ class UserResourceTest extends ApiTestCaseAbstract
                 'password' => '12345678',
             ])
             ->assertSuccessful()
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testPatchToUpdateUser
+     */
+    public function testPatchToUpdateUser(): void
+    {
+        $user = UserFactory::createOne();
+
+        $this->browser()
+            ->asUser($user)
+            ->patch('/api/users/' . $user->getId(), [
+                'username' => 'changed',
+            ])
+            ->dump()
+            ->assertStatus(Response::HTTP_OK)
         ;
     }
 }

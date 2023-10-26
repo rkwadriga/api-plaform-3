@@ -17,6 +17,8 @@ class KernelBrowser extends BaseKernelBrowser
 
     private array $tokens = [];
 
+    private ?string $contentType = null;
+
     public function asUser(User|Proxy $user, array $scopes = null): self
     {
         if (!isset($this->tokens[$user->getId()])) {
@@ -34,6 +36,13 @@ class KernelBrowser extends BaseKernelBrowser
         }
 
         $this->headers['Authorization'] = 'Bearer ' . $this->tokens[$user->getId()]->getToken();
+
+        return $this;
+    }
+
+    public function setContentType(string $contentType): self
+    {
+        $this->contentType = $contentType;
 
         return $this;
     }
@@ -61,7 +70,10 @@ class KernelBrowser extends BaseKernelBrowser
 
     public function patch(string $url, $options = []): BaseKernelBrowser
     {
-        $this->prepareOptions($options);
+        $this
+            ->setContentType('application/merge-patch+json')
+            ->prepareOptions($options)
+        ;
 
         return BaseKernelBrowser::patch($url, $options);
     }
@@ -78,6 +90,10 @@ class KernelBrowser extends BaseKernelBrowser
         if (!isset($options['json'])) {
             $json = $options;
             $options = ['json' => $json];
+        }
+
+        if ($this->contentType !== null) {
+            $this->headers['Content-Type'] = $this->contentType;
         }
 
         $headers = $options['headers'] ?? [];

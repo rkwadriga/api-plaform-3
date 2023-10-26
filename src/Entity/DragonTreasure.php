@@ -22,7 +22,13 @@ use function Symfony\Component\String\u;
         new ApiMetadata\Get(normalizationContext: [
             'groups' => ['treasure:read', 'treasure:item:get'],
         ]),
-        new ApiMetadata\GetCollection(),
+        new ApiMetadata\GetCollection(formats: [
+            'jsonld',
+            'json',
+            'html',
+            'jsonhal',
+            'csv' => 'text/csv',
+        ]),
         new ApiMetadata\Post(security: 'is_granted("ROLE_TREASURE_CREATE")'),
         new ApiMetadata\Put(security: 'is_granted("ROLE_TREASURE_EDIT")'),
         new ApiMetadata\Patch(
@@ -32,13 +38,6 @@ use function Symfony\Component\String\u;
             securityPostDenormalize: 'is_granted("EDIT", object)'
         ),
         new ApiMetadata\Delete(security: 'is_granted("ROLE_ADMIN")')
-    ],
-    formats: [
-        'jsonld',
-        'json',
-        'html',
-        'jsonhal',
-        'csv' => 'text/csv',
     ],
     normalizationContext: [
         'groups' => ['treasure:read'],
