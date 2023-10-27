@@ -112,7 +112,7 @@ class DragonTreasure
     #[ApiMetadata\ApiFilter(Filter\BooleanFilter::class)]
     //#[Annotation\Groups(['treasure:read', 'treasure:write'])]
     //#[ApiMetadata\ApiProperty(security: 'is_granted("EDIT", object)')] // Managed at App\Security\Voter\DragonTreasureVoter
-    #[Annotation\Groups(['admin:read', 'admin:write'])] // Groups are dynamically added at App\ApiPlatform\AdminGroupsContextBuilder
+    #[Annotation\Groups(['admin:read', 'admin:write', 'owner:read'])] // Groups are dynamically added in App\ApiPlatform\AdminGroupsContextBuilder and App\Normalizer\AddOwnerGroupsNormalizer
     private bool $isPublished = true;
 
     public function __construct()
