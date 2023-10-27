@@ -163,7 +163,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     /**
      * Run: symt --filter=testAdminCanPatchToEditTreasure
      */
-    public function testAdminCanSeeIsPublishedFieldPatchToEditTreasure(): void
+    public function testAdminCanPatchToEditTreasure(): void
     {
         $user = UserFactory::createOne();
         $treasure = DragonTreasureFactory::createOne([
@@ -176,10 +176,63 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
             ->asUser($admin)
             ->patch('/api/treasures/' . $treasure->getId(), [
                 'value' => 12345,
+                'isPublished' => true,
             ])
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonMatches('value', 12345)
+            ->assertJsonMatches('isPublished', true)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testAdminCanSeeIsPublishedFieldFromGetItemRequest
+     */
+    public function testAdminCanSeeIsPublishedFieldFromGetItemRequest(): void
+    {
+        $user = UserFactory::createOne();
+        $treasure = DragonTreasureFactory::createOne([
+            'isPublished' => false,
+            'owner' => $user,
+        ]);
+        $admin = UserFactory::new()->asAdmin()->create();
+
+        $this->browser()
+            ->asUser($admin)
+            ->get('/api/treasures/' . $treasure->getId())
+            ->assertStatus(Response::HTTP_OK)
             ->assertJsonMatches('isPublished', false)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testAdminCanSeeIsPublishedFieldFromGetCollectionRequest
+     */
+    public function testAdminCanSeeIsPublishedFieldFromGetCollectionRequest(): void
+    {
+        DragonTreasureFactory::createMany(3, [
+            'isPublished' => false,
+            'owner' => UserFactory::new(),
+        ]);
+        $admin = UserFactory::new()->asAdmin()->create();
+
+        $this->browser()
+            ->asUser($admin)
+            ->get('/api/treasures')
+            ->assertJson()
+            ->assertJsonMatches('"hydra:totalItems"', 3)
+            ->assertJsonMatches('keys("hydra:member"[0])', [
+                '@id',
+                '@type',
+                'id',
+                'owner',
+                'name',
+                'description',
+                'value',
+                'coolFactor',
+                'isPublished',
+                'shortDescription',
+                'plunderedAtAgo',
+            ])
         ;
     }
 
