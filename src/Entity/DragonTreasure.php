@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter as Filter;
 use ApiPlatform\Metadata as ApiMetadata;
 use ApiPlatform\Serializer\Filter\PropertyFilter;
 use App\Repository\DragonTreasureRepository;
+use App\Validator\IsValidOwner;
 use Carbon\Carbon;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -34,8 +35,8 @@ use function Symfony\Component\String\u;
         new ApiMetadata\Patch(
             //security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_TREASURE_EDIT") and object.getOwner() === user)',
             //securityPostDenormalize: 'is_granted("ROLE_ADMIN") or object.getOwner() === user'
-            security: 'is_granted("EDIT", object)',
-            securityPostDenormalize: 'is_granted("EDIT", object)'
+            security: 'is_granted("EDIT", object)', // Handled in App\Security\Voter\DragonTreasureVoter
+            //securityPostDenormalize: 'is_granted("EDIT", object)' // Handled in App\Security\Voter\DragonTreasureVoter
         ),
         new ApiMetadata\Delete(security: 'is_granted("ROLE_ADMIN")')
     ],
@@ -78,6 +79,8 @@ class DragonTreasure
     #[ORM\JoinColumn(nullable: false)]
     #[Annotation\Groups(['treasure:read', 'treasure:write'])]
     #[Assert\Valid]
+    #[Assert\NotNull]
+    #[IsValidOwner]
     private ?User $owner = null;
 
     #[ORM\Column(length: 255)]

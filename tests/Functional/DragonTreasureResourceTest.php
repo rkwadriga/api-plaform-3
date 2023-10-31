@@ -156,7 +156,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
             ->patch('/api/treasures/' . $treasure->getId(), [
                 'owner' => '/api/users/' . $notOwner->getId(),
             ])
-            ->assertStatus(Response::HTTP_FORBIDDEN)
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
         ;
     }
 
