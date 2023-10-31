@@ -257,4 +257,26 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
             ->assertJsonMatches('isPublished', false)
         ;
     }
+
+    /**
+     * Run: symt --filter=testOwnerCanSeeIsPublishedAndIsMineFields
+     */
+    public function testOwnerCanSeeIsPublishedAndIsMineFields(): void
+    {
+        $user = UserFactory::createOne();
+        $treasure = DragonTreasureFactory::createOne([
+            'isPublished' => true,
+            'owner' => $user,
+        ]);
+
+        $this->browser()
+            ->asUser($user, [ApiToken::SCOPE_TREASURE_EDIT])
+            ->patch('/api/treasures/' . $treasure->getId(), [
+                'value' => 12345,
+            ])
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonMatches('isPublished', true)
+            ->assertJsonMatches('isMine', true)
+        ;
+    }
 }
