@@ -87,6 +87,25 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     }
 
     /**
+     * Run: symt --filter=testPostWithoutOwnerCreateTreasure
+     */
+    public function testPostWithoutOwnerCreateTreasure(): void
+    {
+        $user = UserFactory::createOne();
+
+        $this->browser()
+            ->asUser($user)
+            ->post('/api/treasures', [
+                'name' => 'A shiny thing',
+                'description' => 'It sparkles when I wave it in the air.',
+                'value' => 1000,
+                'coolFactor' => 5,
+            ])
+            ->assertStatus(Response::HTTP_CREATED)
+        ;
+    }
+
+    /**
      * Run: symt --filter=testDeniedWithoutScopePostCreateEmptyTreasure
      */
     public function testDeniedWithoutScopePostCreateEmptyTreasure(): void

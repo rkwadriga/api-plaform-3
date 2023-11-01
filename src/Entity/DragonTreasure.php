@@ -79,7 +79,6 @@ class DragonTreasure
     #[ORM\JoinColumn(nullable: false)]
     #[Annotation\Groups(['treasure:read', 'treasure:write'])]
     #[Assert\Valid]
-    #[Assert\NotNull]
     #[IsValidOwner]
     private ?User $owner = null;
 
