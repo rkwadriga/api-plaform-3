@@ -6,6 +6,7 @@ use ApiPlatform\Metadata as ApiMetadata;
 use ApiPlatform\Serializer\Filter\PropertyFilter;
 use App\Repository\UserRepository;
 use App\State\UserHashPasswordProcessor;
+use App\Validator\TreasureAllowedOwnerChange;
 use Doctrine\Common\Collections as Collections;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -92,6 +93,7 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
     #[Annotation\Groups(['user:read', 'user:write'])]
     #[Annotation\SerializedName('treasures')]
     #[Assert\Valid]
+    #[TreasureAllowedOwnerChange]
     private Collections\Collection $dragonTreasures;
 
     #[ORM\OneToMany(mappedBy: 'ownedBy', targetEntity: ApiToken::class)]

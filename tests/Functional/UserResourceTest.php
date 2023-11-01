@@ -6,6 +6,7 @@
 
 namespace App\Tests\Functional;
 
+use App\Factory\DragonTreasureFactory;
 use App\Factory\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -49,6 +50,49 @@ class UserResourceTest extends ApiTestCaseAbstract
             ->asUser($user)
             ->patch('/api/users/' . $user->getId(), [
                 'username' => 'changed',
+            ])
+            ->assertStatus(Response::HTTP_OK)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testTreasuresCanNotBeStolen
+     */
+    public function testTreasuresCanNotBeStolen(): void
+    {
+        $user = UserFactory::createOne();
+        $otherUser = UserFactory::createOne();
+        $dragonTreasure = DragonTreasureFactory::createOne(['owner' => $otherUser]);
+
+        $this->browser()
+            ->asUser($user)
+            ->patch('/api/users/' . $user->getId(), [
+                'username' => 'changed',
+                'dragonTreasures' => [
+                    '/api/treasures/' . $dragonTreasure->getId(),
+                ],
+            ])
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testAdminCanChangeTheTreasuresOwner
+     */
+    public function testAdminCanChangeTheTreasuresOwner(): void
+    {
+        $admin = UserFactory::new()->asAdmin()->create();
+        $user = UserFactory::createOne();
+        $otherUser = UserFactory::createOne();
+        $dragonTreasure = DragonTreasureFactory::createOne(['owner' => $otherUser]);
+
+        $this->browser()
+            ->asUser($admin)
+            ->patch('/api/users/' . $user->getId(), [
+                'username' => 'changed',
+                'dragonTreasures' => [
+                    '/api/treasures/' . $dragonTreasure->getId(),
+                ],
             ])
             ->assertStatus(Response::HTTP_OK)
         ;
