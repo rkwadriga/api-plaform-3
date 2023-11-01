@@ -28,6 +28,12 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     {
         DragonTreasureFactory::createMany(5, fn () => [
             'owner' => UserFactory::createOne(),
+            'isPublished' => true,
+        ]);
+
+        DragonTreasureFactory::createOne([
+            'owner' => UserFactory::createOne(),
+            'isPublished' => false,
         ]);
 
         $this->browser()
@@ -83,6 +89,22 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
                 'owner' => '/api/users/' . $user->getId(),
             ])
             ->assertStatus(Response::HTTP_CREATED)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testGetUnpublishedTreasure
+     */
+    public function testGetUnpublishedTreasure(): void
+    {
+        $dragonTreasure = DragonTreasureFactory::createOne([
+            'owner' => UserFactory::createOne(),
+            'isPublished' => false,
+        ]);
+
+        $this->browser()
+            ->get('/api/treasures/' . $dragonTreasure->getId())
+            ->assertStatus(Response::HTTP_NOT_FOUND)
         ;
     }
 
@@ -204,9 +226,9 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     }
 
     /**
-     * Run: symt --filter=testAdminCanSeeIsPublishedFieldFromGetItemRequest
+     * Run: symt --filter=testAdminCanSeeUnpublishedTreasure
      */
-    public function testAdminCanSeeIsPublishedFieldFromGetItemRequest(): void
+    public function testAdminCanSeeUnpublishedTreasure(): void
     {
         $user = UserFactory::createOne();
         $treasure = DragonTreasureFactory::createOne([
@@ -224,12 +246,51 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     }
 
     /**
+     * Run: symt --filter=testOwnerCanSeeUnpublishedTreasure
+     */
+    public function testOwnerCanSeeUnpublishedTreasure(): void
+    {
+        $user = UserFactory::createOne();
+        $treasure = DragonTreasureFactory::createOne([
+            'isPublished' => false,
+            'owner' => $user,
+        ]);
+
+        $this->browser()
+            ->asUser($user)
+            ->get('/api/treasures/' . $treasure->getId())
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonMatches('isPublished', false)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testAdminCanSeeIsPublishedFieldFromGetItemRequest
+     */
+    public function testAdminCanSeeIsPublishedFieldFromGetItemRequest(): void
+    {
+        $user = UserFactory::createOne();
+        $treasure = DragonTreasureFactory::createOne([
+            'isPublished' => true,
+            'owner' => $user,
+        ]);
+        $admin = UserFactory::new()->asAdmin()->create();
+
+        $this->browser()
+            ->asUser($admin)
+            ->get('/api/treasures/' . $treasure->getId())
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonMatches('isPublished', true)
+        ;
+    }
+
+    /**
      * Run: symt --filter=testAdminCanSeeIsPublishedFieldFromGetCollectionRequest
      */
     public function testAdminCanSeeIsPublishedFieldFromGetCollectionRequest(): void
     {
         DragonTreasureFactory::createMany(3, [
-            'isPublished' => false,
+            'isPublished' => true,
             'owner' => UserFactory::new(),
         ]);
         $admin = UserFactory::new()->asAdmin()->create();
@@ -262,7 +323,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     {
         $user = UserFactory::createOne();
         $treasure = DragonTreasureFactory::createOne([
-            'isPublished' => false,
+            'isPublished' => true,
             'owner' => $user,
         ]);
 
@@ -273,7 +334,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
             ])
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonMatches('value', 12345)
-            ->assertJsonMatches('isPublished', false)
+            ->assertJsonMatches('isPublished', true)
         ;
     }
 

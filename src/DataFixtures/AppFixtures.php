@@ -16,6 +16,7 @@ class AppFixtures extends Fixture
 
         DragonTreasureFactory::createMany(40, fn () => [
             'owner' => UserFactory::random(),
+            'isPublished' => DragonTreasureFactory::faker()->boolean()
         ]);
 
         ApiTokenFactory::createMany(30, fn () => [
