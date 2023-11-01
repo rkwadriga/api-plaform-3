@@ -97,4 +97,26 @@ class UserResourceTest extends ApiTestCaseAbstract
             ->assertStatus(Response::HTTP_OK)
         ;
     }
+
+    /**
+     * Run: symt --filter=testUnpublishedTreasuresNotReturned
+     */
+    public function testUnpublishedTreasuresNotReturned(): void
+    {
+        $user = UserFactory::createOne();
+        DragonTreasureFactory::createOne([
+            'owner' => $user,
+            'isPublished' => true,
+        ]);
+        DragonTreasureFactory::createOne([
+            'owner' => $user,
+            'isPublished' => false,
+        ]);
+
+        $this->browser()
+            ->asUser(UserFactory::createOne())
+            ->get('/api/users/' . $user->getId())
+            ->assertJsonMatches('length("treasures")', 1)
+        ;
+    }
 }

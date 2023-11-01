@@ -90,7 +90,7 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
     private ?string $password = null;
 
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: DragonTreasure::class, cascade: ['persist'], orphanRemoval: true)]
-    #[Annotation\Groups(['user:read', 'user:write'])]
+    #[Annotation\Groups(['user:write'])]
     #[Annotation\SerializedName('treasures')]
     #[Assert\Valid]
     #[TreasureAllowedOwnerChange]
@@ -242,6 +242,16 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collections\Collection<int, DragonTreasure>
+     */
+    #[Annotation\Groups(['user:read'])]
+    #[Annotation\SerializedName('treasures')]
+    public function getPublishedDragonTreasures(): Collections\Collection
+    {
+        return $this->dragonTreasures->filter(fn (DragonTreasure $treasure) => $treasure->getIsPublished());
     }
 
     /**
