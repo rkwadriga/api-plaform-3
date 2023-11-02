@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-#[ApiMetadata\ApiResource(
+/*#[ApiMetadata\ApiResource(
     operations: [
         new ApiMetadata\Get(),
         new ApiMetadata\GetCollection(),
@@ -61,7 +61,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
-#[ApiMetadata\ApiFilter(PropertyFilter::class)]
+#[ApiMetadata\ApiFilter(PropertyFilter::class)]*/
 class User implements Security\UserInterface, Security\PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -70,13 +70,13 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Annotation\Groups(['user:read', 'user:write', 'treasure:item:get'])]
+    //#[Annotation\Groups(['user:read', 'user:write', 'treasure:item:get'])]
     #[Assert\NotBlank]
     #[Assert\Email]
     private ?string $email = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Annotation\Groups(['user:read', 'user:write', 'treasure:item:get', 'treasure:write'])]
+    //#[Annotation\Groups(['user:read', 'user:write', 'treasure:item:get', 'treasure:write'])]
     #[Assert\NotBlank]
     private ?string $username = null;
 
@@ -90,10 +90,10 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
     private ?string $password = null;
 
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: DragonTreasure::class, cascade: ['persist'], orphanRemoval: true)]
-    #[Annotation\Groups(['user:write'])]
-    #[Annotation\SerializedName('treasures')]
+    //#[Annotation\Groups(['user:write'])]
+    //#[Annotation\SerializedName('treasures')]
     #[Assert\Valid]
-    #[TreasureAllowedOwnerChange]
+    //#[TreasureAllowedOwnerChange]
     private Collections\Collection $dragonTreasures;
 
     #[ORM\OneToMany(mappedBy: 'ownedBy', targetEntity: ApiToken::class)]
@@ -102,8 +102,8 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
     /** Scopes given during API authentication */
     private ?array $accessTokenScopes = null;
 
-    #[Annotation\Groups(['user:write'])]
-    #[Annotation\SerializedName('password')]
+    //#[Annotation\Groups(['user:write'])]
+    //#[Annotation\SerializedName('password')]
     #[Assert\NotBlank(groups: ['PostValidation'])]
     private ?string $plainPassword = null;
 
@@ -247,8 +247,8 @@ class User implements Security\UserInterface, Security\PasswordAuthenticatedUser
     /**
      * @return Collections\Collection<int, DragonTreasure>
      */
-    #[Annotation\Groups(['user:read'])]
-    #[Annotation\SerializedName('treasures')]
+    //#[Annotation\Groups(['user:read'])]
+    //#[Annotation\SerializedName('treasures')]
     public function getPublishedDragonTreasures(): Collections\Collection
     {
         return $this->dragonTreasures->filter(fn (DragonTreasure $treasure) => $treasure->getIsPublished());

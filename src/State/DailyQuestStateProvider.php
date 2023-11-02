@@ -24,8 +24,6 @@ class DailyQuestStateProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-
-
         if ($operation instanceof CollectionOperationInterface) {
             $currentPage = $this->pagination->getPage($context);
             $itemsPerPage = $this->pagination->getLimit($operation, $context);
