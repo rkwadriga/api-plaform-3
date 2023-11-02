@@ -32,5 +32,10 @@ class DragonTreasureSetOwnerProcessor implements ProcessorInterface
         }
 
         $this->innerProcessor->process($data, $operation, $uriVariables, $context);
+
+        if ($data instanceof DragonTreasure) {
+            $user = $this->security->getUser();
+            $data->setIsOwnedByAuthenticatedUser($user !== null && $user === $data->getOwner());
+        }
     }
 }

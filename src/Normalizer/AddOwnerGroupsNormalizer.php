@@ -36,13 +36,15 @@ class AddOwnerGroupsNormalizer implements NormalizerInterface, SerializerAwareIn
             $context['groups'][] = 'owner:read';
         }
 
-        $normalized = $this->decorated->normalize($object, $format, $context);
+        /*$normalized = $this->decorated->normalize($object, $format, $context);
 
         if ($isOwner) {
             $normalized['isMine'] = true;
         }
 
-        return $normalized;
+        return $normalized;*/
+
+        return $this->decorated->normalize($object, $format, $context);
     }
 
     public function getSupportedTypes(?string $format): array

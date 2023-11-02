@@ -51,6 +51,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
                 'coolFactor',
                 'shortDescription',
                 'plunderedAtAgo',
+                'isMine',
             ])
             /*->use(function (\Zenstruck\Browser\Json $json) {
                 dump($json->search('keys("hydra:member"[0])'));
@@ -312,6 +313,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
                 'isPublished',
                 'shortDescription',
                 'plunderedAtAgo',
+                'isMine',
             ])
         ;
     }
@@ -357,6 +359,25 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonMatches('isPublished', true)
             ->assertJsonMatches('isMine', true)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testNotOwnerCanNotSeeIsMineField
+     */
+    public function testNotOwnerCanNotSeeIsMineField(): void
+    {
+        $user = UserFactory::createOne();
+        $otherUser = UserFactory::createOne();
+        $treasure = DragonTreasureFactory::createOne([
+            'isPublished' => true,
+            'owner' => $otherUser,
+        ]);
+
+        $this->browser()
+            ->asUser($user)
+            ->get('/api/treasures/' . $treasure->getId())
+            ->assertJsonMatches('isMine', false)
         ;
     }
 }

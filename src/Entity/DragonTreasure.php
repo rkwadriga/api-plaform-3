@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter as Filter;
 use ApiPlatform\Metadata as ApiMetadata;
 use ApiPlatform\Serializer\Filter\PropertyFilter;
 use App\Repository\DragonTreasureRepository;
+use App\State\DragonTreasureStateProvider;
 use App\Validator\IsValidOwner;
 use Carbon\Carbon;
 use DateTimeImmutable;
@@ -13,6 +14,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation as Annotation;
 use Symfony\Component\Validator\Constraints as Assert;
+use LogicException;
 use function Symfony\Component\String\u;
 
 #[ORM\Entity(repositoryClass: DragonTreasureRepository::class)]
@@ -47,6 +49,7 @@ use function Symfony\Component\String\u;
         'groups' => ['treasure:write'],
     ],
     paginationItemsPerPage: 10,
+    provider: DragonTreasureStateProvider::class,
     extraProperties: [
         'standard_put' => true,
     ]
@@ -61,6 +64,7 @@ use function Symfony\Component\String\u;
             fromClass: User::class
         )
     ],
+    provider: DragonTreasureStateProvider::class,
     extraProperties: [
         'standard_put' => true,
     ]
@@ -116,6 +120,8 @@ class DragonTreasure
     //#[ApiMetadata\ApiProperty(security: 'is_granted("EDIT", object)')] // Managed at App\Security\Voter\DragonTreasureVoter
     #[Annotation\Groups(['admin:read', 'admin:write', 'owner:read'])] // Groups are dynamically added in App\ApiPlatform\AdminGroupsContextBuilder and App\Normalizer\AddOwnerGroupsNormalizer
     private bool $isPublished = true;
+
+    private bool $isOwnedByAuthenticatedUser;
 
     public function __construct()
     {
@@ -231,6 +237,24 @@ class DragonTreasure
     public function setIsPublished(bool $isPublished): static
     {
         $this->isPublished = $isPublished;
+
+        return $this;
+    }
+
+    #[Annotation\Groups(['treasure:read'])]
+    #[Annotation\SerializedName('isMine')]
+    public function isOwnedByAuthenticatedUser(): bool
+    {
+        if (!isset($this->isOwnedByAuthenticatedUser)) {
+            throw new LogicException('You must call setIsOwnedByAuthenticatedUser() before isOwnedByAuthenticatedUser()');
+        }
+
+        return $this->isOwnedByAuthenticatedUser;
+    }
+
+    public function setIsOwnedByAuthenticatedUser(bool $isOwnedByAuthenticatedUser): static
+    {
+        $this->isOwnedByAuthenticatedUser = $isOwnedByAuthenticatedUser;
 
         return $this;
     }
