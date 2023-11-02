@@ -21,8 +21,9 @@ use Symfony\Component\Serializer\Annotation\Ignore;
         new Metadata\Get(),
         new Metadata\Patch(),
     ],
-    provider: DailyQuestStateProvider::class, // For Get and GetCollection operations
-    processor: DailyQuestStateProcessor::class // For other operations
+    paginationItemsPerPage: 5, // For Get and GetCollection operations
+    provider: DailyQuestStateProvider::class,
+    processor: DailyQuestStateProcessor::class// For other operations
 )]
 class DailyQuest
 {
