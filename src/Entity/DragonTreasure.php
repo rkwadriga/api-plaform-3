@@ -126,7 +126,7 @@ class DragonTreasure
     #[Annotation\Groups(['admin:read', 'admin:write', 'owner:read', 'treasure:write'])] // Groups are dynamically added in App\ApiPlatform\AdminGroupsContextBuilder and App\Normalizer\AddOwnerGroupsNormalizer
     private bool $isPublished = true;
 
-    private bool $isOwnedByAuthenticatedUser;
+    private bool $isOwnedByAuthenticatedUser = false;
 
     public function __construct()
     {

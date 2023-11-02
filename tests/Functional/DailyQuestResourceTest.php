@@ -7,6 +7,8 @@
 namespace App\Tests\Functional;
 
 use App\Enum\DailyQuestStatusEnum;
+use App\Factory\DragonTreasureFactory;
+use App\Factory\UserFactory;
 use DateTime;
 use Symfony\Component\HttpFoundation\Response;
 use Zenstruck\Foundry\Test\Factories;
@@ -26,6 +28,10 @@ class DailyQuestResourceTest extends ApiTestCaseAbstract
      */
     public function testPatchCanUpdateStatus(): void
     {
+        DragonTreasureFactory::createMany(5, [
+            'owner' => UserFactory::new(),
+        ]);
+
         $yesterday = new DateTime('-2 days');
         $this->browser()
             ->patch('/api/quests/' . $yesterday->format('Y-m-d'), [

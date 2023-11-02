@@ -7,6 +7,7 @@
 namespace App\ApiResource;
 
 use ApiPlatform\Metadata as Metadata;
+use App\Entity\DragonTreasure;
 use App\Enum\DailyQuestStatusEnum;
 use App\State\DailyQuestStateProcessor;
 use App\State\DailyQuestStateProvider;
@@ -37,6 +38,11 @@ class DailyQuest
     public DailyQuestStatusEnum $status;
 
     public DateTimeInterface $lastUpdated;
+
+    /**
+     * @var array<DragonTreasure>
+     */
+    public array $treasures;
 
     public function __construct(
         DateTimeInterface $day
