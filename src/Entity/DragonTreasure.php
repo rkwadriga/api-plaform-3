@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter as Filter;
 use ApiPlatform\Metadata as ApiMetadata;
 use ApiPlatform\Serializer\Filter\PropertyFilter;
 use App\Repository\DragonTreasureRepository;
+use App\State\DragonTreasureStateProcessor;
 use App\State\DragonTreasureStateProvider;
 use App\Validator\IsValidOwner;
 use Carbon\Carbon;
@@ -32,13 +33,17 @@ use function Symfony\Component\String\u;
             'jsonhal',
             'csv' => 'text/csv',
         ]),
-        new ApiMetadata\Post(security: 'is_granted("ROLE_TREASURE_CREATE")'),
+        new ApiMetadata\Post(
+            security: 'is_granted("ROLE_TREASURE_CREATE")',
+            processor: DragonTreasureStateProcessor::class
+        ),
         new ApiMetadata\Put(security: 'is_granted("ROLE_TREASURE_EDIT")'),
         new ApiMetadata\Patch(
             //security: 'is_granted("ROLE_ADMIN") or (is_granted("ROLE_TREASURE_EDIT") and object.getOwner() === user)',
             //securityPostDenormalize: 'is_granted("ROLE_ADMIN") or object.getOwner() === user'
             security: 'is_granted("EDIT", object)', // Handled in App\Security\Voter\DragonTreasureVoter
             //securityPostDenormalize: 'is_granted("EDIT", object)' // Handled in App\Security\Voter\DragonTreasureVoter
+            processor: DragonTreasureStateProcessor::class
         ),
         new ApiMetadata\Delete(security: 'is_granted("ROLE_ADMIN")')
     ],
@@ -118,7 +123,7 @@ class DragonTreasure
     #[ApiMetadata\ApiFilter(Filter\BooleanFilter::class)]
     //#[Annotation\Groups(['treasure:read', 'treasure:write'])]
     //#[ApiMetadata\ApiProperty(security: 'is_granted("EDIT", object)')] // Managed at App\Security\Voter\DragonTreasureVoter
-    #[Annotation\Groups(['admin:read', 'admin:write', 'owner:read'])] // Groups are dynamically added in App\ApiPlatform\AdminGroupsContextBuilder and App\Normalizer\AddOwnerGroupsNormalizer
+    #[Annotation\Groups(['admin:read', 'admin:write', 'owner:read', 'treasure:write'])] // Groups are dynamically added in App\ApiPlatform\AdminGroupsContextBuilder and App\Normalizer\AddOwnerGroupsNormalizer
     private bool $isPublished = true;
 
     private bool $isOwnedByAuthenticatedUser;

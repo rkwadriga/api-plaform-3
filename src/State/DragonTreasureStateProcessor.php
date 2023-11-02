@@ -6,22 +6,30 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\DragonTreasure;
 use App\Entity\User;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use LogicException;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-#[AsDecorator('api_platform.doctrine.orm.state.persist_processor')]
-class DragonTreasureSetOwnerProcessor implements ProcessorInterface
+//#[Symfony\Component\DependencyInjection\Attribute\AsDecorator('api_platform.doctrine.orm.state.persist_processor')]
+class DragonTreasureStateProcessor implements ProcessorInterface
 {
     public function __construct(
+        #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private readonly ProcessorInterface $innerProcessor,
         private readonly Security $security
     ) {
     }
 
+    /**
+     * @param DragonTreasure $data
+     * @param Operation $operation
+     * @param array $uriVariables
+     * @param array $context
+     * @return void
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        if ($data instanceof DragonTreasure && $data->getOwner() === null) {
+        if ($data->getOwner() === null) {
             /** @var User $user */
             $user = $this->security->getUser();
             if ($user === null) {
@@ -33,9 +41,7 @@ class DragonTreasureSetOwnerProcessor implements ProcessorInterface
 
         $this->innerProcessor->process($data, $operation, $uriVariables, $context);
 
-        if ($data instanceof DragonTreasure) {
-            $user = $this->security->getUser();
-            $data->setIsOwnedByAuthenticatedUser($user !== null && $user === $data->getOwner());
-        }
+        $user = $this->security->getUser();
+        $data->setIsOwnedByAuthenticatedUser($user !== null && $user === $data->getOwner());
     }
 }
