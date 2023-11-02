@@ -5,7 +5,9 @@ namespace App\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\DragonTreasure;
+use App\Entity\Notification;
 use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -16,7 +18,8 @@ class DragonTreasureStateProcessor implements ProcessorInterface
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private readonly ProcessorInterface $innerProcessor,
-        private readonly Security $security
+        private readonly Security $security,
+        private readonly EntityManagerInterface $entityManager
     ) {
     }
 
@@ -25,9 +28,9 @@ class DragonTreasureStateProcessor implements ProcessorInterface
      * @param Operation $operation
      * @param array $uriVariables
      * @param array $context
-     * @return void
+     * @return DragonTreasure
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if ($data->getOwner() === null) {
             /** @var User $user */
@@ -43,5 +46,21 @@ class DragonTreasureStateProcessor implements ProcessorInterface
 
         $user = $this->security->getUser();
         $data->setIsOwnedByAuthenticatedUser($user !== null && $user === $data->getOwner());
+
+        $previousData = $context['previous_data'] ?? null;
+        if ($previousData instanceof DragonTreasure
+            && $data->getIsPublished()
+            && $previousData->getIsPublished() !== $data->getIsPublished()
+        ) {
+            $notification = new Notification();
+            $notification
+                ->setDragonTreasure($data)
+                ->setMessage(sprintf('Treasure #%s has been published!', $data->getId()))
+            ;
+            $this->entityManager->persist($notification);
+            $this->entityManager->flush();
+        }
+
+        return $data;
     }
 }
