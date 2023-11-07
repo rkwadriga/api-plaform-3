@@ -11,6 +11,7 @@ use App\ApiResource\UserApi;
 use App\Entity\User;
 use ArrayIterator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfonycasts\MicroMapper\MicroMapperInterface;
 
 class EntityToDtoStateProvider implements ProviderInterface
 {
@@ -18,7 +19,8 @@ class EntityToDtoStateProvider implements ProviderInterface
         #[Autowire(service: OrmState\CollectionProvider::class)]
         private readonly ProviderInterface $collectionProvider,
         #[Autowire(service: OrmState\ItemProvider::class)]
-        private readonly ProviderInterface $itemProvider
+        private readonly ProviderInterface $itemProvider,
+        private readonly MicroMapperInterface $microMapper
     ) {
     }
 
@@ -48,13 +50,6 @@ class EntityToDtoStateProvider implements ProviderInterface
 
     private function mapEntityToDto(User $user): UserApi
     {
-        $dto = new UserApi();
-        $dto->id = $user->getId();
-        $dto->email = $user->getEmail();
-        $dto->username = $user->getUsername();
-        $dto->dragonTreasures = $user->getPublishedDragonTreasures()->toArray();
-        $dto->flameThrowingDistance = rand(1, 10);
-
-        return $dto;
+        return $this->microMapper->map($user, UserApi::class);
     }
 }

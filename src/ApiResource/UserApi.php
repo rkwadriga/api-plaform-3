@@ -8,44 +8,59 @@ namespace App\ApiResource;
 
 use ApiPlatform\Doctrine\Orm\State\Options;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata as Metadata;
 use App\Entity\DragonTreasure;
 use App\Entity\User;
 use App\State\EntityClassDtoStateProcessor;
 use App\State\EntityToDtoStateProvider;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Constraints as Constraints;
 
-#[ApiResource(
+#[Metadata\ApiResource(
     shortName: 'User',
-    //normalizationContext: [AbstractNormalizer::IGNORED_ATTRIBUTES => ['flameThrowingDistance']], // These properties will be not readable
+    //normalizationContext: [Symfony\Component\Serializer\Normalizer\AbstractNormalizer::IGNORED_ATTRIBUTES => ['flameThrowingDistance']], // These properties will be not readable
+    operations: [
+        new Metadata\Get(),
+        new Metadata\GetCollection(),
+        new Metadata\Post(
+            security: 'is_granted("PUBLIC_ACCESS")',
+            validationContext: ['groups' => ['Default', 'postValidation']]
+        ),
+        new Metadata\Patch(
+            security: 'is_granted("ROLE_USER_EDIT")',
+        ),
+        new Metadata\Delete()
+    ],
     paginationItemsPerPage: 5,
+    security: 'is_granted("ROLE_USER")',
     provider: EntityToDtoStateProvider::class,
     processor: EntityClassDtoStateProcessor::class,
     stateOptions: new Options(entityClass: User::class)
 )]
-#[ApiFilter(SearchFilter::class, properties: [
+#[Metadata\ApiFilter(SearchFilter::class, properties: [
     'username' => 'partial',
 ])]
 class UserApi
 {
-    #[ApiProperty(readable: false, writable: false, identifier: true)]
+    #[Metadata\ApiProperty(readable: false, writable: false, identifier: true)]
     public ?int $id = null;
 
+    #[Constraints\NotBlank]
+    #[Constraints\Email]
     public ?string $email = null;
 
+    #[Constraints\NotBlank]
     public ?string $username = null;
 
-    #[ApiProperty(readable: false)]
+    #[Metadata\ApiProperty(readable: false)]
+    #[Constraints\NotBlank(groups: ['postValidation'])]
     public ?string $password = null;
 
     /**
      * @var array<DragonTreasure>
      */
-    #[ApiProperty(writable: false)]
+    #[Metadata\ApiProperty(writable: false)]
     public array $dragonTreasures = [];
 
-    #[ApiProperty(writable: false)]
+    #[Metadata\ApiProperty(writable: false)]
     public int $flameThrowingDistance = 0;
 }

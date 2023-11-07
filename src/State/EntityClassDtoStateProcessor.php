@@ -11,19 +11,16 @@ use App\ApiResource\UserApi;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\PasswordHasher\PasswordHasherInterface;
+use Symfonycasts\MicroMapper\MicroMapperInterface;
 
 class EntityClassDtoStateProcessor implements ProcessorInterface
 {
     public function __construct(
-        private readonly UserRepository $userRepository,
-        private readonly UserPasswordHasherInterface $passwordHasher,
         #[Autowire(service: PersistProcessor::class)]
         private readonly ProcessorInterface $persistProcessor,
         #[Autowire(service: RemoveProcessor::class)]
-        private readonly ProcessorInterface $removeProcessor
+        private readonly ProcessorInterface $removeProcessor,
+        private readonly MicroMapperInterface $microMapper
     ) {
     }
 
@@ -52,24 +49,6 @@ class EntityClassDtoStateProcessor implements ProcessorInterface
 
     private function mapDtoToEntity(UserApi $data): User
     {
-        if ($data->id === null) {
-            $entity = new User();
-        } else {
-            $entity = $this->userRepository->find($data->id);
-            if ($entity === null) {
-                throw new NotFoundHttpException("Entity #{$data->id} not found");
-            }
-        }
-
-        $entity
-            ->setEmail($data->email)
-            ->setUsername($data->username)
-        ;
-
-        if ($data->password !== null) {
-            $entity->setPassword($this->passwordHasher->hashPassword($entity, $data->password));
-        }
-
-        return $entity;
+        return $this->microMapper->map($data, User::class);
     }
 }
