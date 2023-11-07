@@ -30,7 +30,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 ])]
 class UserApi
 {
-    #[ApiProperty(readable: false, identifier: true)]
+    #[ApiProperty(readable: false, writable: false, identifier: true)]
     public ?int $id = null;
 
     public ?string $email = null;
@@ -43,7 +43,9 @@ class UserApi
     /**
      * @var array<DragonTreasure>
      */
+    #[ApiProperty(writable: false)]
     public array $dragonTreasures = [];
 
+    #[ApiProperty(writable: false)]
     public int $flameThrowingDistance = 0;
 }
