@@ -9,6 +9,7 @@ namespace App\Tests\Functional;
 use App\Factory\DragonTreasureFactory;
 use App\Factory\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
+use Zenstruck\Browser\Json;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
 /**
@@ -30,6 +31,10 @@ class UserResourceTest extends ApiTestCaseAbstract
                 'password' => '12345678',
             ])
             ->assertStatus(Response::HTTP_CREATED)
+            ->use(function (Json $json) {
+                $json->assertMissing('id');
+                $json->assertMissing('password');
+            })
             ->assertJsonMatches('email', 'draggin_in_the_morning@coffee.com')
             ->post('/api/login', [
                 'email' => 'draggin_in_the_morning@coffee.com',
@@ -50,8 +55,10 @@ class UserResourceTest extends ApiTestCaseAbstract
             ->asUser($user)
             ->patch('/api/users/' . $user->getId(), [
                 'username' => 'changed',
+                'flameThrowingDistance' => 9999,
             ])
             ->assertStatus(Response::HTTP_OK)
+            ->assertJsonMatches('username', 'changed')
         ;
     }
 
