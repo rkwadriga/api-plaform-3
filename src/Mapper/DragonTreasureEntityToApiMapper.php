@@ -7,13 +7,20 @@
 namespace App\Mapper;
 
 use App\ApiResource\DragonTreasureApi;
+use App\ApiResource\UserApi;
 use App\Entity\DragonTreasure;
 use Symfonycasts\MicroMapper\AsMapper;
 use Symfonycasts\MicroMapper\MapperInterface;
+use Symfonycasts\MicroMapper\MicroMapperInterface;
 
 #[AsMapper(from: DragonTreasure::class, to: DragonTreasureApi::class)]
 class DragonTreasureEntityToApiMapper implements MapperInterface
 {
+    public function __construct(
+        private readonly MicroMapperInterface $microMapper
+    ) {
+    }
+
     /**
      * @param DragonTreasure $from
      * @param string $toClass
@@ -24,6 +31,7 @@ class DragonTreasureEntityToApiMapper implements MapperInterface
     {
         $dto = new DragonTreasureApi();
         $dto->id = $from->getId();
+        $dto->owner = $from->getOwner() ? $this->microMapper->map($from->getOwner(), UserApi::class) : null;
 
         return $dto;
     }
