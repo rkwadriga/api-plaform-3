@@ -7,8 +7,6 @@ use ApiPlatform\Doctrine\Orm\State as OrmState;
 use ApiPlatform\Metadata as Metadata;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
-use App\ApiResource\UserApi;
-use App\Entity\User;
 use ArrayIterator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfonycasts\MicroMapper\MicroMapperInterface;
@@ -29,7 +27,7 @@ class EntityToDtoStateProvider implements ProviderInterface
         $resourceClass = $operation->getClass();
 
         if ($operation instanceof Metadata\CollectionOperationInterface) {
-            /** @var iterable<User>|Paginator $entities */
+            /** @var iterable<object>|Paginator $entities */
             $entities = $this->collectionProvider->provide($operation, $uriVariables, $context);
 
             $dtos = [];
@@ -50,7 +48,7 @@ class EntityToDtoStateProvider implements ProviderInterface
         return $entity ? $this->mapEntityToDto($entity, $resourceClass) : null;
     }
 
-    private function mapEntityToDto(object $entity, string $resourceClass): UserApi
+    private function mapEntityToDto(object $entity, string $resourceClass): object
     {
         return $this->microMapper->map($entity, $resourceClass);
     }

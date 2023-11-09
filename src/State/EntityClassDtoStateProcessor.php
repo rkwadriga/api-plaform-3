@@ -8,7 +8,6 @@ use ApiPlatform\Doctrine\Orm\State\Options;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\ApiResource\UserApi;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfonycasts\MicroMapper\MicroMapperInterface;
 
@@ -24,11 +23,11 @@ class EntityClassDtoStateProcessor implements ProcessorInterface
     }
 
     /**
-     * @param UserApi $data
+     * @param object $data
      * @param Operation $operation
      * @param array $uriVariables
      * @param array $context
-     * @return UserApi|void
+     * @return object|void
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
