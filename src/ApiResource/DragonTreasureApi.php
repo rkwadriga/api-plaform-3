@@ -25,7 +25,19 @@ class DragonTreasureApi
 {
     public ?int $id = null;
 
+    public ?UserApi $owner = null;
+
     public ?string $name = null;
 
-    public ?UserApi $owner = null;
+    public ?string $description = null;
+
+    public int $value = 0;
+
+    public int $coolFactor = 0;
+
+    public ?string $shortDescription = null;
+
+    public ?string $plunderedAtAgo = null;
+
+    public ?bool $isMine = null;
 }
