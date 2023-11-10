@@ -9,7 +9,6 @@ namespace App\ApiResource;
 use ApiPlatform\Doctrine\Orm\State\Options;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata as Metadata;
-use App\Entity\DragonTreasure;
 use App\Entity\User;
 use App\State\EntityClassDtoStateProcessor;
 use App\State\EntityToDtoStateProvider;
@@ -56,7 +55,7 @@ class UserApi
     public ?string $password = null;
 
     /**
-     * @var array<DragonTreasure>
+     * @var array<DragonTreasureApi>
      */
     #[Metadata\ApiProperty(writable: false)]
     public array $dragonTreasures = [];
