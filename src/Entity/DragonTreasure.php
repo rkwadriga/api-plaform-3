@@ -96,7 +96,7 @@ class DragonTreasure
     //#[ApiMetadata\ApiFilter(Filter\SearchFilter::class, strategy: 'partial')]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 50, maxMessage: 'Describe your loot in 50 chars or less')]
-    private ?string $name = null;
+    private ?string $name;
 
     #[ORM\Column(type: Types::TEXT)]
    // #[Annotation\Groups(['treasure:read'])]
@@ -128,8 +128,9 @@ class DragonTreasure
 
     private bool $isOwnedByAuthenticatedUser = false;
 
-    public function __construct()
+    public function __construct(?string $name)
     {
+        $this->name = $name;
         $this->plunderedAt = new DateTimeImmutable();
     }
 
@@ -155,7 +156,7 @@ class DragonTreasure
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): static
     {
         $this->name = $name;
 
@@ -167,7 +168,7 @@ class DragonTreasure
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
 
@@ -194,7 +195,7 @@ class DragonTreasure
         return $this->value;
     }
 
-    public function setValue(int $value): static
+    public function setValue(?int $value): static
     {
         $this->value = $value;
 
@@ -206,7 +207,7 @@ class DragonTreasure
         return $this->coolFactor;
     }
 
-    public function setCoolFactor(int $coolFactor): static
+    public function setCoolFactor(?int $coolFactor): static
     {
         $this->coolFactor = $coolFactor;
 
