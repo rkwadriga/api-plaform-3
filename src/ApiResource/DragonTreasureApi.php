@@ -9,6 +9,7 @@ namespace App\ApiResource;
 use ApiPlatform\Doctrine\Orm\State\Options;
 use App\Entity\DragonTreasure;
 use ApiPlatform\Metadata as Metadata;
+use App\State\DragonTreasureApiStateProcessor;
 use App\State\EntityClassDtoStateProcessor;
 use App\State\EntityToDtoStateProvider;
 use App\Validator\IsValidOwner;
@@ -33,7 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     paginationItemsPerPage: 10,
     //security: 'is_granted("ROLE_USER")',
     provider: EntityToDtoStateProvider::class,
-    processor: EntityClassDtoStateProcessor::class,
+    processor: DragonTreasureApiStateProcessor::class,
     stateOptions: new Options(entityClass: DragonTreasure::class)
 )]
 class DragonTreasureApi
