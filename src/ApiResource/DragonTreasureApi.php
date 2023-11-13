@@ -16,6 +16,19 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[Metadata\ApiResource(
     shortName: 'Treasure',
+    operations: [
+        new Metadata\Get(),
+        new Metadata\GetCollection(),
+        new Metadata\Post(
+            security: 'is_granted("ROLE_TREASURE_CREATE")'
+        ),
+        new Metadata\Patch(
+            security: 'is_granted("EDIT", object)'
+        ),
+        new Metadata\Delete(
+            security: 'is_granted("ROLE_ADMIN")'
+        )
+    ],
     //normalizationContext: [Symfony\Component\Serializer\Normalizer\AbstractNormalizer::IGNORED_ATTRIBUTES => ['flameThrowingDistance']], // These properties will be not readable
     paginationItemsPerPage: 10,
     //security: 'is_granted("ROLE_USER")',
@@ -28,7 +41,7 @@ class DragonTreasureApi
     public ?int $id = null;
 
     #[Assert\Valid]
-    //#[IsValidOwner]
+    #[IsValidOwner]
     public ?UserApi $owner = null;
 
     #[Assert\NotBlank]
@@ -48,6 +61,9 @@ class DragonTreasureApi
     public ?string $shortDescription = null;
 
     public ?string $plunderedAtAgo = null;
+
+    #[Metadata\ApiProperty(security: 'object === null or is_granted("EDIT", object)')]
+    public bool $isPublished = false;
 
     public ?bool $isMine = null;
 }

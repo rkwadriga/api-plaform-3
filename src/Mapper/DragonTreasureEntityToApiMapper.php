@@ -34,7 +34,7 @@ class DragonTreasureEntityToApiMapper implements MapperInterface
         $dto = new DragonTreasureApi();
         $dto->id = $from->getId();
         $dto->owner = $from->getOwner()
-            ? $this->microMapper->map($from->getOwner(), UserApi::class, [MicroMapperInterface::MAX_DEPTH => 0])
+            ? $this->microMapper->map($from->getOwner(), UserApi::class, [MicroMapperInterface::MAX_DEPTH => 1])
             : null;
 
         return $dto;
@@ -56,6 +56,7 @@ class DragonTreasureEntityToApiMapper implements MapperInterface
         $to->coolFactor = $from->getCoolFactor();
         $to->shortDescription = $from->getShortDescription();
         $to->plunderedAtAgo = $from->getPlunderedAtAgo();
+        $to->isPublished = $from->getIsPublished();
         $to->isMine = $currentUser !== null && $currentUser === $from->getOwner();
 
         return $to;

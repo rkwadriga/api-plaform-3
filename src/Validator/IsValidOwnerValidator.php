@@ -2,6 +2,7 @@
 
 namespace App\Validator;
 
+use App\ApiResource\UserApi;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Constraint;
@@ -16,7 +17,7 @@ class IsValidOwnerValidator extends ConstraintValidator
     }
 
     /**
-     * @param User $value
+     * @param UserApi $value
      * @param IsValidOwner $constraint
      */
     public function validate($value, Constraint $constraint): void
@@ -25,12 +26,13 @@ class IsValidOwnerValidator extends ConstraintValidator
             return;
         }
 
+        /** @var ?User $user */
         $user = $this->security->getUser();
         if ($user === null) {
             throw new LogicException('IsValidOwnerValidator should only be used when a user is logged in');
         }
 
-        if ($value === $user || $this->security->isGranted('ROLE_ADMIN')) {
+        if ($value->id === $user->getId() || $this->security->isGranted('ROLE_ADMIN')) {
             return;
         }
 
