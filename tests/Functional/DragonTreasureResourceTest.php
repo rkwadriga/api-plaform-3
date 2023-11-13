@@ -260,7 +260,7 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
         ]);
 
         $this->browser()
-            ->asUser($user)
+            ->asUser($user, [ApiToken::SCOPE_TREASURE_EDIT])
             ->get('/api/treasures/' . $treasure->getId())
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonMatches('isPublished', false)

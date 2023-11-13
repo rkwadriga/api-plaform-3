@@ -59,12 +59,12 @@ class DragonTreasureApi
     #[Assert\LessThanOrEqual(10)]
     public int $coolFactor = 0;
 
+    #[Metadata\ApiProperty(security: 'object === null or is_granted("EDIT", object)')]
+    public bool $isPublished = false;
+
     public ?string $shortDescription = null;
 
     public ?string $plunderedAtAgo = null;
-
-    #[Metadata\ApiProperty(security: 'object === null or is_granted("EDIT", object)')]
-    public bool $isPublished = false;
 
     public ?bool $isMine = null;
 }
