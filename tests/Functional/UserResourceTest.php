@@ -63,6 +63,30 @@ class UserResourceTest extends ApiTestCaseAbstract
     }
 
     /**
+     * Run: symt --filter=testTreasuresCanBeRemoved
+     */
+    public function testTreasuresCanBeRemoved(): void
+    {
+        $user = UserFactory::createOne();
+        $dragonTreasure1 = DragonTreasureFactory::createOne(['owner' => $user]);
+        DragonTreasureFactory::createOne(['owner' => $user]);
+
+        $userUri = '/api/users/' . $user->getId();
+
+        $this->browser()
+            ->asUser($user)
+            ->patch($userUri, [
+                'dragonTreasures' => [
+                    '/api/treasures/' . $dragonTreasure1->getId(),
+                ],
+            ])
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonMatches('length("dragonTreasures")', 1)
+            ->assertJsonMatches('dragonTreasures[0]', '/api/treasures/' . $dragonTreasure1->getId())
+        ;
+    }
+
+    /**
      * Run: symt --filter=testTreasuresCanNotBeStolen
      */
     public function testTreasuresCanNotBeStolen(): void

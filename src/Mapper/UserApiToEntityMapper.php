@@ -6,20 +6,26 @@
 
 namespace App\Mapper;
 
+use App\ApiResource\DragonTreasureApi;
 use App\ApiResource\UserApi;
+use App\Entity\DragonTreasure;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Exception;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfonycasts\MicroMapper\AsMapper;
 use Symfonycasts\MicroMapper\MapperInterface;
+use Symfonycasts\MicroMapper\MicroMapperInterface;
 
 #[AsMapper(from: UserApi::class, to: User::class)]
 class UserApiToEntityMapper implements MapperInterface
 {
     public function __construct(
         private readonly UserRepository $userRepository,
-        private readonly UserPasswordHasherInterface $passwordHasher
+        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly PropertyAccessorInterface $propertyAccessor,
+        private readonly MicroMapperInterface $microMapper
     ) {
     }
 
@@ -50,6 +56,12 @@ class UserApiToEntityMapper implements MapperInterface
         if ($from->password !== null) {
             $to->setPassword($this->passwordHasher->hashPassword($to, $from->password));
         }
+
+        $dragonTreasures = array_map(fn (DragonTreasureApi $dto) => (
+            $this->microMapper->map($dto, DragonTreasure::class, [MicroMapperInterface::MAX_DEPTH => 0])
+        ), $from->dragonTreasures);
+
+        $this->propertyAccessor->setValue($to, 'dragonTreasures', $dragonTreasures);
 
         return $to;
     }
