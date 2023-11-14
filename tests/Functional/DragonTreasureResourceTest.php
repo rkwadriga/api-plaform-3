@@ -131,6 +131,27 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
     }
 
     /**
+     * Run: symt --filter=testPostWithOwnerCreateTreasure
+     */
+    public function testPostWithOwnerCreateTreasure(): void
+    {
+        $user = UserFactory::createOne();
+
+        $this->browser()
+            ->asUser($user)
+            ->post('/api/treasures', [
+                'name' => 'A shiny thing',
+                'description' => 'It sparkles when I wave it in the air.',
+                'value' => 1000,
+                'coolFactor' => 5,
+                'owner' => '/api/users/' . $user->getId(),
+            ])
+            ->assertStatus(Response::HTTP_CREATED)
+            ->assertJsonMatches('name', 'A shiny thing')
+        ;
+    }
+
+    /**
      * Run: symt --filter=testDeniedWithoutScopePostCreateEmptyTreasure
      */
     public function testDeniedWithoutScopePostCreateEmptyTreasure(): void
@@ -225,6 +246,31 @@ class DragonTreasureResourceTest extends ApiTestCaseAbstract
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonMatches('value', 12345)
             ->assertJsonMatches('isPublished', true)
+        ;
+    }
+
+    /**
+     * Run: symt --filter=testAdminCanPatchWithNewOwnerToEditTreasure
+     */
+    public function testAdminCanPatchWithNewOwnerToEditTreasure(): void
+    {
+        $user = UserFactory::createOne();
+        $newOwner = UserFactory::createOne();
+        $treasure = DragonTreasureFactory::createOne([
+            'isPublished' => false,
+            'owner' => $user,
+        ]);
+        $admin = UserFactory::new()->asAdmin()->create();
+
+        $newOwnerUri = '/api/users/' . $newOwner->getId();
+
+        $this->browser()
+            ->asUser($admin)
+            ->patch('/api/treasures/' . $treasure->getId(), [
+                'owner' => $newOwnerUri,
+            ])
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonMatches('owner', $newOwnerUri)
         ;
     }
 
