@@ -147,6 +147,7 @@ class UserResourceTest extends ApiTestCaseAbstract
         $this->browser()
             ->asUser(UserFactory::createOne())
             ->get('/api/users/' . $user->getId())
+            ->dump()
             ->assertJsonMatches('length("treasures")', 1)
         ;
     }

@@ -12,6 +12,7 @@ use ApiPlatform\Metadata as Metadata;
 use App\Entity\User;
 use App\State\EntityClassDtoStateProcessor;
 use App\State\EntityToDtoStateProvider;
+use App\Validator\TreasureAllowedOwnerChange;
 use Symfony\Component\Validator\Constraints as Constraints;
 
 #[Metadata\ApiResource(
@@ -38,6 +39,7 @@ use Symfony\Component\Validator\Constraints as Constraints;
 #[Metadata\ApiFilter(SearchFilter::class, properties: [
     'username' => 'partial',
 ])]
+#[TreasureAllowedOwnerChange]
 class UserApi
 {
     #[Metadata\ApiProperty(readable: false, writable: false, identifier: true)]

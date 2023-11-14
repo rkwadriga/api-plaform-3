@@ -2,8 +2,7 @@
 
 namespace App\Validator;
 
-use App\Entity\DragonTreasure;
-use Doctrine\ORM\EntityManagerInterface;
+use App\ApiResource\UserApi;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -11,13 +10,12 @@ use Symfony\Component\Validator\ConstraintValidator;
 class TreasureAllowedOwnerChangeValidator extends ConstraintValidator
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
         private readonly Security $security
     ) {
     }
 
     /**
-     * @param array<DragonTreasure> $value
+     * @param UserApi $value
      * @param TreasureAllowedOwnerChange $constraint
      */
     public function validate($value, Constraint $constraint): void
@@ -31,10 +29,9 @@ class TreasureAllowedOwnerChangeValidator extends ConstraintValidator
         }
 
         $allOwnersCorrect = true;
-        $unitOfWork = $this->entityManager->getUnitOfWork();
-        foreach ($value as $dragonTreasure) {
-            $originalData = $unitOfWork->getOriginalEntityData($dragonTreasure);
-            if (isset($originalData['owner']) && $originalData['owner'] !== $dragonTreasure->getOwner()) {
+        foreach ($value->dragonTreasures as $dragonTreasureApi) {
+            $originalOwner = $dragonTreasureApi->owner;
+            if ($originalOwner !== null && $originalOwner->id !== $value->id) {
                 $allOwnersCorrect = false;
                 break;
             }
